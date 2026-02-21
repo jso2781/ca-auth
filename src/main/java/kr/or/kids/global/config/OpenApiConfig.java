@@ -20,9 +20,9 @@ public class OpenApiConfig {
     public OpenAPI drugsafeUserOpenAPI() {
         return new OpenAPI()
             .info(new Info()
-                .title("DrugSafe User API")
+                .title("DrugSafe Common Auth API")
                 .description("""
-                    DrugSafe User Backend (Spring Boot 2.7.18) OpenAPI 3.0 문서입니다.
+                    DrugSafe Common Auth Backend (Spring Boot 2.7.18) OpenAPI 3.0 문서입니다.
 
                     ## 인증 방식 안내 (Authorize 버튼 사용 안함)
                     본 API는 **Authorization 헤더 기반 토큰**이 아니라, **세션 쿠키(JSESSIONID)** 기반 인증을 사용합니다.
