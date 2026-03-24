@@ -1,5 +1,7 @@
 package kr.or.kids.domain.ca.auth.controller;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,8 +45,8 @@ public class AuthController {
     @Operation(summary = "로그인 처리(Redis Idle 키 생성, Redis Active 키 생성 포함)", description = "로그인 처리(Redis Idle 키 생성, Redis Active 키 생성 포함)한다.(JWT)")
     @PostMapping(value="/login")
     @ResponseBody
-    public ResponseEntity<ApiPrnDto> login(@RequestBody MbrTokenPVO input){
-        ApiPrnDto apiPrnDto = authService.login(input);
+    public ResponseEntity<ApiPrnDto> login(@RequestBody MbrTokenPVO input, HttpServletRequest request){
+        ApiPrnDto apiPrnDto = authService.login(input, request);
 
         if("0".equals(apiPrnDto.getCode())){
             return ResponseEntity.ok(apiPrnDto);
@@ -94,14 +96,14 @@ public class AuthController {
     @Operation(summary = "로그아웃 처리(Redis Idle 키 갱신, Redis Active 키 갱신 포함)", description = "JWT 토큰 갱신(Redis Idle 키 갱신, Redis Active 키 갱신 포함)한다.")
     @PostMapping("/logout")
     @ResponseBody
-    public ResponseEntity<ApiPrnDto> logout(Authentication auth, @RequestBody LogoutPVO loginPVO, @RequestHeader(value = "Authorization", required = false) String authorization){
+    public ResponseEntity<ApiPrnDto> logout(Authentication auth, @RequestBody LogoutPVO loginPVO, @RequestHeader(value = "Authorization", required = false) String authorization, HttpServletRequest request){
         String mbrId = (String) auth.getPrincipal();
 
         MbrTokenDVO mtd = new MbrTokenDVO();
         mtd.setTokenSn(loginPVO.getTokenSn());
         mtd.setMbrId(mbrId);
 
-        ApiPrnDto apiPrnDto = authService.logout(mtd, authorization);
+        ApiPrnDto apiPrnDto = authService.logout(mtd, authorization, request);
 
         if("0".equals(apiPrnDto.getCode())){
             return ResponseEntity.ok(apiPrnDto);

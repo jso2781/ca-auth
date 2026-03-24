@@ -5,6 +5,7 @@
     <resultMap id="MbrInfoMap" type="MbrInfoRVO">
       <result property="mbrNo" column="mbr_no"/>
       <result property="mbrId" column="mbr_id"/>
+      <result property="lgnSeCd" column="lgn_se_cd"/>
       <result property="encptMbrFlnm" column="encpt_mbr_flnm"/>
       <result property="encptMbrEmlNm" column="encpt_mbr_eml_nm"/>
       <result property="encptMbrPswd" column="encpt_mbr_pswd"/>
@@ -57,6 +58,7 @@
         SELECT
              mbr.mbr_no
             ,mbr.mbr_id
+            ,slog.lgn_se_cd
             ,mbr.encpt_mbr_flnm
             ,mbr.encpt_mbr_eml_nm
             ,mbr.encpt_mbr_pswd
@@ -79,6 +81,16 @@
             ,ex.expert_yn
             ,ex.appr_inst_task_json_array
         FROM kids_own.tb_pp_m_mbr_info mbr
+        LEFT JOIN LATERAL (
+            select log1.lgn_se_cd
+            from kids_own.tb_ca_l_sesn_log_info_mng log1
+            where log1.sess_log_sn = (
+                                    SELECT coalesce(MAX(log2.sess_log_sn), 0) as sess_log_sn
+                                    FROM kids_own.tb_ca_l_sesn_log_info_mng log2
+                                    WHERE log2.srvc_user_id = mbr.mbr_id
+                                    and log2.cntn_se_no = '1'
+                                )
+        ) slog ON TRUE
         LEFT JOIN LATERAL (
             SELECT
                  CASE WHEN COUNT(et.exprt_no) > 0 THEN 'Y' ELSE 'N' END as expert_yn

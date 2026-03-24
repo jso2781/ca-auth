@@ -25,6 +25,12 @@ public class MbrInfoRVO
     private String mbrId;
 
     /**
+     * 로그인구분코드 (1 : ID 로그인 , 2 : 애니아이디 로그인)
+     */
+    @Schema(description = "로그인구분코드 (1 : ID 로그인 , 2 : 애니아이디 로그인)", type = "String")
+    private String lgnSeCd;
+
+    /**
      * 회원암호화성명
      */
     @Schema(description = "회원암호화성명", type = "String")

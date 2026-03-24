@@ -2,6 +2,8 @@ package kr.or.kids.domain.ca.auth.service;
 
 import java.math.BigInteger;
 
+import javax.servlet.http.HttpServletRequest;
+
 import kr.or.kids.domain.ca.auth.vo.MbrTokenDVO;
 import kr.or.kids.domain.ca.auth.vo.MbrTokenPVO;
 import kr.or.kids.domain.ca.auth.vo.MbrTokenRVO;
@@ -13,7 +15,7 @@ public interface AuthService
      * 사용자 로그인
      * @return API 응답 DTO
      */
-    public ApiPrnDto  login(MbrTokenPVO loginVO);
+    public ApiPrnDto  login(MbrTokenPVO loginVO, HttpServletRequest request);
 
     /**
      * 토큰 갱신
@@ -24,7 +26,7 @@ public interface AuthService
     /**
      * 토큰 삭제(로그아웃시)
      */
-    public ApiPrnDto logout(MbrTokenDVO mbrTokenDVO, String authorization);
+    public ApiPrnDto logout(MbrTokenDVO mbrTokenDVO, String authorization, HttpServletRequest request);
 
     /**
      * Redis Idle Key 리셋
