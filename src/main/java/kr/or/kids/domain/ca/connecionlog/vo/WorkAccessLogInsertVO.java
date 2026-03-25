@@ -12,7 +12,7 @@ public class WorkAccessLogInsertVO {
     private Long cntnLogSn;            // 접속로그일련번호(PK)
     private Timestamp inptDt;          // 입력일시
     private String instCd;             // 기관코드
-    private String MenuId;             // 대상메뉴ID
+    private String menuId;             // 대상메뉴일련번호
     private String qnaSqlCn;           // 질의응답쿼리 (TEXT)
     private String urlAddr;            // URL주소
     private String taskSeCdNo;         // 업무구분코드번호

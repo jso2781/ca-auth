@@ -21,7 +21,9 @@ import kr.or.kids.domain.ca.auth.vo.MbrTokenDVO;
 import kr.or.kids.domain.ca.auth.vo.MbrTokenPVO;
 import kr.or.kids.domain.ca.auth.vo.RefreshPVO;
 import kr.or.kids.global.system.common.vo.ApiPrnDto;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Tag(name = "AuthController", description = "대국민포털_로그인토큰 관리(JWT)")
 @RestController
 @RequestMapping(value="/api/ca/auth")
@@ -130,4 +132,26 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiPrnDto);
         }
     }
+
+    /**
+     * Redis Idle 키 리셋
+     * @param authorization
+     * @return
+     */
+   @PostMapping("/isLoggedIn")
+   @ResponseBody
+   public ResponseEntity<ApiPrnDto> isLoggedIn(
+           @RequestHeader(value = "Authorization", required = false) String authorization
+   ) {
+       ApiPrnDto apiPrnDto = authService.isLoggedIn(authorization);
+
+          log.info("authorization====>" + authorization);
+
+       if("0".equals(apiPrnDto.getCode())){
+           return ResponseEntity.ok(apiPrnDto);
+       }else{
+           return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiPrnDto);
+       }
+   }
+
 }

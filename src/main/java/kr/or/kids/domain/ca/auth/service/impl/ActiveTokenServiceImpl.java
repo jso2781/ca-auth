@@ -15,24 +15,24 @@ public class ActiveTokenServiceImpl implements ActiveTokenService {
         this.redisTemplate = redisTemplate;
     }
 
-    private String key(String mbrId, String tokenSn) {
-        return "jwt:active:" + mbrId + ":" + tokenSn;
+    private String key(String mbrId, String tokenId) {
+        return "jwt:active:" + mbrId + ":" + tokenId;
     }
 
     @Override
-    public void markActive(String mbrId, String tokenSn, long ttlMillis) {
+    public void markActive(String mbrId, String tokenId, long ttlMillis) {
         if(ttlMillis <= 0)return;
-        redisTemplate.opsForValue().set(key(mbrId, tokenSn), "1", Duration.ofMillis(ttlMillis));
+        redisTemplate.opsForValue().set(key(mbrId, tokenId), "1", Duration.ofMillis(ttlMillis));
     }
 
     @Override
-    public void revoke(String mbrId, String tokenSn) {
-        redisTemplate.delete(key(mbrId, tokenSn));
+    public void revoke(String mbrId, String tokenId) {
+        redisTemplate.delete(key(mbrId, tokenId));
     }
 
     @Override
-    public boolean isActive(String mbrId, String tokenSn) {
-        Boolean exists = redisTemplate.hasKey(key(mbrId, tokenSn));
+    public boolean isActive(String mbrId, String tokenId) {
+        Boolean exists = redisTemplate.hasKey(key(mbrId, tokenId));
         return Boolean.TRUE.equals(exists);
     }
 }

@@ -174,6 +174,7 @@ public class AuthServiceImpl implements AuthService
                         tokenInsertVO.setRgtrId(mbrId);
                         tokenInsertVO.setMdfrId(mbrId);
                         mbrTokenMapper.insertMbrToken(tokenInsertVO);
+                        userInfo.setLgnSeCd(lgnSeCd);
                         userInfo.setTokenSn(tokenSn);
                         userInfo.setAcsTokenCn(acsTokenCn);
                         userInfo.setUpdtTokenCn(updtTokenCn);
@@ -202,6 +203,7 @@ public class AuthServiceImpl implements AuthService
 
                         mbrTokenMapper.updateMbrToken(tokenUpdateVO);
 
+                        userInfo.setLgnSeCd(lgnSeCd);
                         userInfo.setTokenSn(tokenSn);
                         userInfo.setAcsTokenCn(acsTokenCn);
                         userInfo.setUpdtTokenCn(updtTokenCn);
@@ -327,10 +329,13 @@ public class AuthServiceImpl implements AuthService
 
         // 토큰과 연계된 사용자 정보 조회
         MbrInfoRVO userInfo = mbrInfoMapper.getMbrInfo(mp);
+        String lgnSeCd = userInfo.getLgnSeCd();
 
+        userInfo.setLgnSeCd(lgnSeCd);
         userInfo.setTokenSn(tokenSn);
 
         HashMap<String, Object> bizData = new HashMap<>();
+        bizData.put("lgnSeCd", lgnSeCd);
         bizData.put("tokenSn", tokenSn);
         bizData.put("acsTokenCn", newAcsTokenCn);
         bizData.put("updtTokenCn", newUpdtTokenCn);
@@ -443,6 +448,48 @@ public class AuthServiceImpl implements AuthService
         idleTokenService.touch(tokenSn);
 
         return new ApiPrnDto(ApiResultCode.SUCCESS);
+    }
+
+    /**
+     * Redis Idle 키 리셋
+     */
+    public ApiPrnDto isLoggedIn(String authorizationHeader) {
+        String token = null;
+        ApiPrnDto apiPrnDto = new ApiPrnDto(ApiResultCode.SUCCESS);
+
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+            token = authorizationHeader.substring(7);
+        }
+
+        if(token == null){
+            return new ApiPrnDto(ApiResultCode.UNAUTHORIZED);
+        }
+
+        // AcsTokenCn에서 tokenSn claim 추출
+        String tokenSn = jwtTokenProvider.getTokenSn(token);
+        if (tokenSn == null || tokenSn.isBlank()) {
+            return new ApiPrnDto(ApiResultCode.UNAUTHORIZED);
+        }
+
+        String mbrId = jwtTokenProvider.getSubject(token);
+        // 회원정보기본 테이블에 회원정보가 존재하는 조회
+        MbrInfoPVO mp = new MbrInfoPVO();
+        mp.setMbrId(mbrId);
+        MbrInfoRVO userInfo = mbrInfoMapper.getMbrInfo(mp);
+        HashMap<String, Object> bizData = new HashMap<>();
+        //  Redis Idle 키가 없을 시
+        if (!idleTokenService.exists(tokenSn)) {
+            bizData.put("loging", "false");
+        }else{
+            bizData.put("loging", "true");
+            bizData.put("userInfo", userInfo);
+            bizData.put("mbrId", mbrId);
+            bizData.put("token", token);
+        }
+
+        apiPrnDto.setData(bizData);
+
+        return apiPrnDto;
     }
 
 }

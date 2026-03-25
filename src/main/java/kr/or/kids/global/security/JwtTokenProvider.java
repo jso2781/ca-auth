@@ -32,7 +32,6 @@ public class JwtTokenProvider {
 
     public static final String CLAIM_TOKEN_SN = "tokenSn";
     public static final String CLAIM_PRGRM_ID   = "prgrmId";
-
     /**
      * <PRE>
      * AcsTokenCn 생성
@@ -42,7 +41,7 @@ public class JwtTokenProvider {
      * @param SECRET_KEY
      * @return
      */
-    public String createAcsTokenCn(String issuer, String mbrId, Long expTime, String tokenSn, String prgrmId) {
+    public String createAcsTokenCn(String issuer, String mbrId, long expTime, String tokenSn, String prgrmId) {
         if(expTime < 0L){
             // 만료시간은 지났습니다.
             throw new ApplicationException(MessageContextHolder.getMessage("ui.token.expired"));
@@ -50,7 +49,6 @@ public class JwtTokenProvider {
 
         // 현재시간 기준 이후 ACCESS_TOKEN_EXPIRATION 시간만큼 Access Token 유효시간 설정
         Date expireTime = new Date(System.currentTimeMillis() + expTime);
-
         // 토큰생성에필요한데이터설정으로토큰생성
         return Jwts.builder()
                 .setSubject(mbrId)                                 // userId & 토큰생성주체지정
@@ -70,15 +68,13 @@ public class JwtTokenProvider {
      * @param expTime(밀리초)
      * @return
      */
-    public String createUpdtTokenCn(String issuer, String mbrId, Long expTime) {
+    public String createUpdtTokenCn(String issuer, String mbrId, long expTime) {
         if(expTime < 0L){
             // 만료시간은 지났습니다.
             throw new ApplicationException(MessageContextHolder.getMessage("ui.token.expired"));
         }
-
      // 현재시간 기준 이후 ACCESS_TOKEN_EXPIRATION 시간만큼 Access Token 유효시간 설정
         Date expireTime = new Date(System.currentTimeMillis() + expTime);
-
         // 토큰생성에필요한데이터설정으로토큰생성
         return Jwts.builder()
                 .setSubject(mbrId)                                  // userId & 토큰생성주체지정
@@ -89,7 +85,6 @@ public class JwtTokenProvider {
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)     // key, key 암호화알고리즘설정
                 .compact();                                         // 만료 시간 설정& compact to String
     }
-
     /**
      * JWT 토큰 문자열에서 토큰데이터를 가져오는 메소드
      * @param acsTokenCn
@@ -100,16 +95,13 @@ public class JwtTokenProvider {
             // 유효하지 않은 JWT 토큰
             throw new ApplicationException(MessageContextHolder.getMessage("ui.token.invalid"));
         }
-
         if(StringUtils.hasLength(token) && token.startsWith("Bearer ")){
             token = token.substring(7);
         }
-
         // 토큰 파싱
         Claims claims = parseClaims(token);
         return claims;
     }
-
     /**
      * JWT 토큰 문자열에서 회원ID(mbrId) 가져오는 메소드
      * @param token - Access Token 혹은 Refresh Token
@@ -124,7 +116,6 @@ public class JwtTokenProvider {
         if(StringUtils.hasLength(token) && token.startsWith("Bearer ")){
             token = token.substring(7);
         }
-
         // 토큰 파싱
         Claims claims = parseClaims(token);
         return claims.getSubject();
@@ -197,4 +188,5 @@ public class JwtTokenProvider {
         Object v = claims.get(CLAIM_PRGRM_ID);
         return v == null ? null : String.valueOf(v);
     }
+
 }

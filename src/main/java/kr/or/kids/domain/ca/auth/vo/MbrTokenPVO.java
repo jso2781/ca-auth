@@ -2,8 +2,9 @@ package kr.or.kids.domain.ca.auth.vo;
 
 import java.math.BigInteger;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
 
-
+@Data
 @Schema(name = "대국민포털_회원_TOKEN", description = "대국민포털_회원_TOKEN Search Parameter VO")
 public class MbrTokenPVO
 {
@@ -67,6 +68,57 @@ public class MbrTokenPVO
     @Schema(description = "수정일시", type = "String")
     private String mdfcnDt;
 
+
+    /**
+     * 회원성명
+     */
+    @Schema(description = "회원성명", type = "String")
+    private String mbrFlnm;
+
+    /**
+     * 회원이메일
+     */
+    @Schema(description = "회원이메일", type = "String")
+    private String mbrEmlNm;
+
+    /**
+     * 회원비밀번호
+     */
+    @Schema(description = "회원비밀번호", type = "String")
+    private String mbrPswd;
+
+    /**
+     * 회원전화번호
+     */
+    @Schema(description = "회원비밀번호", type = "String")
+    private String mbrTelno;
+
+
+
+    /**
+     * 회원성명
+     */
+    @Schema(description = "암호화 회원성명", type = "String")
+    private String encryptMbrFlnm;
+
+    /**
+     * 회원이메일
+     */
+    @Schema(description = "암호화 회원이메일", type = "String")
+    private String encryptMbrEmlNm;
+
+    /**
+     * 회원비밀번호
+     */
+    @Schema(description = "암호화 회원비밀번호", type = "String")
+    private String encryptMbrPswd;
+
+    /**
+     * 회원전화번호
+     */
+    @Schema(description = "암호화 회원비밀번호", type = "String")
+    private String encryptMbrTelno;
+
     public BigInteger getTokenSn()
     {
         return tokenSn;
@@ -74,12 +126,6 @@ public class MbrTokenPVO
     public void setTokenSn(BigInteger tokenSn)
     {
         this.tokenSn = tokenSn;
-    }
-    public String getEncptMbrPswd() {
-        return encptMbrPswd;
-    }
-    public void setEncptMbrPswd(String encptMbrPswd) {
-        this.encptMbrPswd = encptMbrPswd;
     }
     public String getMbrId()
     {
@@ -145,4 +191,78 @@ public class MbrTokenPVO
     {
         this.mdfcnDt = mdfcnDt;
     }
+
+    public String getMbrFlnm()
+    {
+        return mbrFlnm;
+    }
+    public void setMbrFlnm(String mbrFlnm)
+    {
+        this.mbrFlnm = mbrFlnm;
+    }
+
+    public String getMbrEmlNm()
+    {
+        return mbrEmlNm;
+    }
+    public void setMbrEmlNm(String mbrFlnm)
+    {
+        this.mbrEmlNm = mbrEmlNm;
+    }
+
+    public String getMbrPswd()
+    {
+        return mbrPswd;
+    }
+    public void setMbrPswd(String mbrPswd)
+    {
+        this.mbrPswd = mbrPswd;
+    }
+
+    public String getMbrTelno()
+    {
+        return mbrTelno;
+    }
+    public void setMbrTelno(String mbrTelno)
+    {
+        this.mbrTelno = mbrTelno;
+    }
+
+    public String getEncryptMbrFlnm()
+    {
+        return encryptMbrFlnm;
+    }
+    public void setEncryptMbrFlnm(String encryptMbrFlnm)
+    {
+        this.encryptMbrFlnm = encryptMbrFlnm;
+    }
+
+    public String getEncryptMbrPswd()
+    {
+        return encryptMbrPswd;
+    }
+    public void setEncryptMbrPswd(String encryptMbrPswd)
+    {
+        this.encryptMbrPswd = encryptMbrPswd;
+    }
+
+    public String getEncryptMbrEmlNm()
+    {
+        return encryptMbrEmlNm;
+    }
+    public void setEncryptMbrEmlNm(String encryptMbrEmlNm)
+    {
+        this.encryptMbrEmlNm = encryptMbrEmlNm;
+    }
+
+    public String getEncryptMbrTelno()
+    {
+        return encryptMbrTelno;
+    }
+    public void setEncryptMbrTelno(String encryptMbrTelno)
+    {
+        this.encryptMbrTelno = encryptMbrTelno;
+    }
+
+
 }

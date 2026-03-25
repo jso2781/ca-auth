@@ -46,9 +46,9 @@ public class SecurityConfig {
             // Auth API
             .antMatchers(HttpMethod.POST, "/api/ca/auth/anyid/login").permitAll()
             .antMatchers(HttpMethod.GET, "/api/ca/auth/me").permitAll()
-            .antMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+            .antMatchers("/swagger-ui/**", "/v3/api-docs/**","/WEB-INF/views/**").permitAll()
 
-            .antMatchers("/api/ca/auth/login", "/api/ca/auth/refresh").permitAll()
+            .antMatchers("/api/ca/auth/login", "/api/ca/auth/refresh", "/api/ca/auth/isLoggedIn").permitAll()
             .antMatchers("/api/ca/auth/logout", "/api/ca/auth/extend").authenticated()
             .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .anyRequest().permitAll()

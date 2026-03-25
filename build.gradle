@@ -2,9 +2,10 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '2.7.18'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.sonarqube' version '7.2.3.7755'
 }
 
-group = 'kr.og.kids'
+group = 'kr.or.kids'
 version = '0.0.1-SNAPSHOT'
 description = 'DrugSafe User Project for Spring Boot'
 
@@ -14,9 +15,11 @@ java {
     }
 }
 
+/*
 repositories {
     mavenCentral()
 }
+*/
 
 // 한글 인코딩 설정
 tasks.withType(JavaCompile) {
@@ -31,6 +34,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5'
 
+    // java mail 관련 activation
+    implementation 'com.sun.activation:javax.activation:1.2.0'
+
+    // 추가
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
     // =========================================================================
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
@@ -41,6 +50,7 @@ dependencies {
     // =========================================================================
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     runtimeOnly 'org.postgresql:postgresql'
+
 
     // DriverSpy + jdbc:log4jdbc:* 지원 (log4jdbc-log4j2 계열)
     implementation 'org.bgee.log4jdbc-log4j2:log4jdbc-log4j2-jdbc4.1:1.16'
@@ -64,9 +74,10 @@ dependencies {
      implementation fileTree(dir: 'libs/oz', include: ['*.jar'])
 
     // Dev
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    // developmentOnly 'org.springframework.boot:spring-boot-devtools'
     // page helper
     implementation 'com.github.pagehelper:pagehelper-spring-boot-starter:1.4.7'
+
 
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -78,6 +89,10 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+
+
 }
 
 tasks.named('test') {

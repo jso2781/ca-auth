@@ -42,34 +42,6 @@
   -->
 
   <!-- ===== 로컬 개발(local) ===== -->
-  <springProfile name="localout">
-    <!-- log4jdbc 사용 시에만 유효 -->
-    <logger name="jdbc" level="OFF"/>
-    <logger name="jdbc.sqlonly" level="OFF"/>
-    <logger name="jdbc.sqltiming" level="DEBUG"/>
-    <logger name="jdbc.resultset" level="OFF"/>
-    <logger name="jdbc.resultsettable" level="DEBUG"/>
-    <logger name="jdbc.audit" level="OFF"/>
-    <logger name="jdbc.connection" level="OFF"/>
-
-    <!-- MyBatis /  OFF -->
-    <logger name="org.mybatis" level="DEBUG"/>
-    <logger name="org.apache.ibatis" level="DEBUG"/>
-    <logger name="org.springframework.jdbc.core" level="OFF"/>
-    <logger name="com.drugsafe.user" level="DEBUG"/>
-
-    <!-- DEBUG 6 -->
-    <logger name="org.hibernate.SQL" level="OFF"/>
-    <logger name="org.hibernate.orm.jdbc.bind" level="OFF"/>
-    <logger name="org.hibernate.orm.jdbc.extract" level="OFF"/>
-
-    <root level="INFO">
-      <appender-ref ref="CONSOLE"/>
-      <appender-ref ref="FILE"/>
-    </root>
-  </springProfile>
-
-  <!-- ===== 로컬 개발(local) ===== -->
   <springProfile name="local">
     <!-- log4jdbc 사용 시에만 유효 -->
     <logger name="jdbc" level="OFF"/>

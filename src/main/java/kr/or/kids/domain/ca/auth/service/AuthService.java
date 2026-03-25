@@ -36,6 +36,13 @@ public interface AuthService
     public ApiPrnDto extend(String authorizationHeader);
 
     /**
+     * 토큰으로 현재 로그인 여부체크
+     * @param authorizationHeader
+     * @return
+     */
+    public ApiPrnDto isLoggedIn(String authorizationHeader);
+
+    /**
      * 대국민포털_회원_TOKEN 정보 조회 
      *
      * @param mbrTokenPVO 조회용 파라메터 정보 
