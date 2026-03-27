@@ -18,6 +18,8 @@ import org.springframework.util.StringUtils;
 import java.util.HashMap;
 import java.util.List;
 
+import static org.apache.logging.log4j.ThreadContext.isEmpty;
+
 @Slf4j
 @Service
 public class PersonalInfoAccessLogServiceImpl implements PersonalInfoAccessLogService {
@@ -93,7 +95,9 @@ public class PersonalInfoAccessLogServiceImpl implements PersonalInfoAccessLogSe
             if (!StringUtils.hasLength(insertVO.getTaskSysSeCd())) {
                 throw new RuntimeException("taskSeCd 파라미터가 누락되었습니다.");
             }
-
+            if (insertVO.getMenuSn() == null ) {
+                throw new IllegalArgumentException("menuSn 파라미터가 누락되었습니다.");
+            }
             /**
              * BizProc
              */

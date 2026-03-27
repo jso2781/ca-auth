@@ -1,5 +1,6 @@
 package kr.or.kids.domain.ca.mbr.service;
 
+import kr.or.kids.domain.ca.auth.vo.MbrTokenPVO;
 import kr.or.kids.domain.ca.mbr.vo.MbrInfoDVO;
 import kr.or.kids.domain.ca.mbr.vo.MbrInfoPVO;
 import kr.or.kids.domain.ca.mbr.vo.MbrInfoRVO;
@@ -67,4 +68,23 @@ public interface MbrInfoService
      * @return 삭제된 건수 
      */
     public int deleteMbrInfo(MbrInfoDVO mbrInfoDVO);
+
+    /**
+     * 대국민포털_회원정보기본 정보 삭제
+     *
+     * @param mbrInfoDVO 삭제용 파라메터 정보
+     * @return 삭제된 건수
+     */
+    public ApiPrnDto encrypto(MbrTokenPVO mbrInfoDVO);
+
+
+    /**
+     * 대국민포털_회원정보기본 정보 삭제
+     *
+     * @param mbrInfoDVO 삭제용 파라메터 정보
+     * @return 삭제된 건수
+     */
+    public ApiPrnDto decrypto(MbrTokenPVO mbrInfoDVO);
+
+
 }

@@ -18,10 +18,10 @@ server:
 
 spring:
   redis:
-    #host: redis-dev-headless.redis-dev
-    #port: 6379
-    host: 192.168.2.149
-    port: 30901
+    host: redis-dev-headless.redis-dev
+    port: 6379
+    #host: 192.168.2.149
+    #port: 30901
     password: kids2025!
     timeout: 2000ms
   servlet:
@@ -32,10 +32,10 @@ spring:
       max-request-size: 150MB
   thymeleaf:
     cache: false
+    enabled: true
   mvc:
     view:
       prefix: /views
-      suffix: .jsp
   jmx:
     enabled: false
   datasource:
@@ -59,10 +59,10 @@ spring:
   mail:
     host: mail.drugsafe.or.kr
     port: 25
- #  username: ${EMAIL_USERNAME}
- #  password: ${EMAIL_PASSWORD}   # Gmail 앱 비밀번호
-    username: kids@drugsafe.or.kr
-    password: 6k7i0d0s
+    username: ${EMAIL_USERNAME}
+    password: ${EMAIL_PASSWORD}   # Gmail 앱 비밀번호
+ #  username: kids@drugsafe.or.kr
+ #  password: 6k7i0d0s
   protocol: smtp
   default-encoding: UTF-8
   test-mode: true
@@ -76,7 +76,14 @@ spring:
         timeout: 5000
         writetimeout: 5000
         debug: true  # 추가 (XML과 일치)
-
+surem:
+  base-url: https://api.surem.com
+  user-code: YOUR_USER_CODE
+  secret-key: YOUR_SECRET_KEY
+address:
+  openapi:
+    url: https://business.juso.go.kr/addrink/addrLinkUrl.do
+    key: devU01TX0FVVEgyMDI2MDEwOTEzMDY1ODExNzQwOTQ=
 springdoc:
   swagger-ui:
     #    doc-expansion: full           # API 목록 접힘 (선택)
@@ -102,7 +109,6 @@ file:
 #   port: 30901
 #   password: kids2025!
 #   timeout: 2000ms
-
 logging:
   level:
     com.kids.ca.aapi: DEBUG
@@ -111,7 +117,8 @@ logging:
 
 mybatis:
   type-aliases-package: kr.or.kids
-  mapper-locations: mybatis/postgresql/mapper/**/*.xml
+  mapper-locations:
+    - classpath*:mybatis/postgresql/mapper/**/*.xml
   configuration:
     cache-enabled: true
     lazy-loading-enabled: true
@@ -123,8 +130,18 @@ mybatis:
     default-statement-timeout: 30
     default-fetch-size: 100
     safe-row-bounds-enabled: false
-    map-underscore-to-camel-case: false
+    map-underscore-to-camel-case: true
     local-cache-scope: session
     jdbc-type-for-null: NULL
     variables:
       db_encrypt_key: "1234567890"
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true

@@ -25,12 +25,6 @@ public class MbrInfoRVO
     private String mbrId;
 
     /**
-     * 로그인구분코드 (1 : ID 로그인 , 2 : 애니아이디 로그인)
-     */
-    @Schema(description = "로그인구분코드 (1 : ID 로그인 , 2 : 애니아이디 로그인)", type = "String")
-    private String lgnSeCd;
-
-    /**
      * 회원암호화성명
      */
     @Schema(description = "회원암호화성명", type = "String")
@@ -205,4 +199,14 @@ public class MbrInfoRVO
         @Schema(description = "사업자업무관리번호", type = "String")
         private String bzmnTaskMngNo;
     }
+
+    /**
+     * 사업자등록번호
+     */
+    @Schema(description = "사업자등록번호", type = "String")
+    private String lgnSeCd;
+
 }
+
+
+

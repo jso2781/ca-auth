@@ -3,6 +3,8 @@ package kr.or.kids.domain.ca.connecionlog.service;
 import kr.or.kids.domain.ca.connecionlog.vo.WorkAccessLogInsertVO;
 import kr.or.kids.global.system.common.vo.ApiPrnDto;
 
+import javax.servlet.http.HttpSession;
+
 
 public interface WorkAccessLogService {
 

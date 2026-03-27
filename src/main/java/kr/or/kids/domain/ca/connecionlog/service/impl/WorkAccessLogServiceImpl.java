@@ -92,16 +92,9 @@ public class WorkAccessLogServiceImpl implements WorkAccessLogService {
         HashMap<String, Object> bizData = new HashMap<>();
 
         try {
-          //  if(!StringUtils.hasLength(insertVO.getAcsrId())) {
-          //      throw new RuntimeException("acsrId 파라미터가 누락되었습니다.");
-          //  }
-            /**
-             * BizProc
-             */
+            // 요청자아이디(rqstrId), 로그인 상태(cntn_se_no='1') 기준으로 가장 나중에 생성된 세션로그일련번호(tb_ca_l_sesn_log_info_mng.sess_log_sn)를 구함.
+            long lastId = connectionLogMapper.getLastId(insertVO.getRgtrId());
 
-           // getLastId
-
-            long lastId = connectionLogMapper.getLastId();
             long id = workAccessLogMapper.nextConnecttionDetailId();
 
             insertVO.setMenuUtztnSn(id);

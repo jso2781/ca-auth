@@ -2,9 +2,11 @@ package kr.or.kids.domain.ca.mbr.service.impl;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import kr.or.kids.domain.ca.auth.vo.MbrTokenPVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import kr.or.kids.domain.ca.mbr.vo.MbrInfoPVO;
 import kr.or.kids.domain.ca.mbr.vo.MbrInfoRVO;
 import kr.or.kids.global.system.common.ApiResultCode;
 import kr.or.kids.global.system.common.vo.ApiPrnDto;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import static kr.or.kids.global.util.DrugsafeUtil.markingFunc;
 
@@ -23,8 +26,17 @@ import static kr.or.kids.global.util.DrugsafeUtil.markingFunc;
 @Service
 public class MbrInfoServiceImpl implements MbrInfoService
 {
+
+    private final WebClient webClient;
+
     @Autowired
     private MbrInfoMapper mbrInfoMapper;
+
+    private final String AUTH_SVC_URL = "http://192.168.2.147:30013/api/ca/crypto";
+
+    public MbrInfoServiceImpl(WebClient webClient) {
+        this.webClient = webClient;
+    }
 
     @Override
     public ApiPrnDto list(int pageNum,int pageSize) {
@@ -38,7 +50,7 @@ public class MbrInfoServiceImpl implements MbrInfoService
             PageHelper.startPage(pageNum, pageSize);
 
             // UserMapper의 list() 메서드 호출 (PageHelper가 자동으로 페이징 쿼리 적용)
-            List<MbrInfoRVO> mbrList = mbrInfoMapper.list();
+            List<MbrInfoRVO> mbrList = mbrInfoMapper.getMbrInfo();
 
             log.info("=== DB 조회 결과: userList.size()={} ===", mbrList.size());
 
@@ -131,4 +143,98 @@ public class MbrInfoServiceImpl implements MbrInfoService
     {
         return mbrInfoMapper.deleteMbrInfo(mbrInfoDVO);
     }
+
+
+    /**
+     * 암호화
+     * @return
+     */
+    public ApiPrnDto encrypto(MbrTokenPVO reqVO) {
+        ApiPrnDto result = new ApiPrnDto(ApiResultCode.SUCCESS);
+        HashMap<String, Object> reqData = new HashMap<>();
+        HashMap<String, Object> resData = new HashMap<>();
+
+        try {
+
+            //String mbrFlnm = reqVO.getMbrFlnm();      // 회원명
+            //String MbrEmlNm = reqVO.getMbrEmlNm();    // 회원 이메일
+            //String mbrPswd = reqVO.getMbrPswd();      // 비밀번호
+            //String MbrTelno = reqVO.getMbrTelno();    // 전화번호
+
+               String mbrFlnm = reqVO.getMbrFlnm();
+               reqData.put("mbrFlnm",mbrFlnm);
+
+            Map res = webClient.post()
+                    .uri(AUTH_SVC_URL + "/encrypto")
+                    .bodyValue(reqData)
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block(); // 대량 처리가 없다면 동기 방식으로 처리 가능
+
+            log.info("res:::::" + res);
+
+            resData.put("encryptMbrFlnm", res);
+            result.setMsg("사용자 정보 암호화 완료");
+
+
+        } catch(Exception e) {
+            log.error("사용자 정보 암호화 실패", e);
+            result = new ApiPrnDto(ApiResultCode.SYSTEM_ERROR);
+            result.setMsg("사용자 정보 암호화 중 오류가 발생했습니다: " + e.getMessage());
+        }
+
+        result.setData(resData);
+        return result;
+    }
+
+
+    /**
+     * 비번암호화
+     * @return
+     */
+    public ApiPrnDto decrypto(MbrTokenPVO reqVO) {
+        ApiPrnDto result = new ApiPrnDto(ApiResultCode.SUCCESS);
+        HashMap<String, Object> resData = new HashMap<>();
+        HashMap<String, Object> reqData = new HashMap<>();
+        // 암호화 초기화 및 실행
+        // xCrypto.RegisterEx("normal", 2, "/app/xecuredb/conf/xdsp_pool.properties", "pool1", "drugsafe_db", "drugsafe_ow", "drugsafe_tb", "normal");
+
+        try {
+            /**
+             * BizProc
+             */
+
+
+            result.setMsg("사용자 정보 복호화 완료");
+
+            String encryptMbrFlnm = reqVO.getEncryptMbrFlnm();
+            reqData.put("encryptMbrFlnm",encryptMbrFlnm);
+
+            Map res = webClient.post()
+                    .uri(AUTH_SVC_URL + "/decrypto")
+                    .bodyValue(reqData)
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block(); // 대량 처리가 없다면 동기 방식으로 처리 가능
+
+            log.info("res:::::" + res);
+
+            resData.put("data", res);
+            result.setMsg("사용자 정보 암호화 완료");
+
+        } catch(Exception e) {
+            log.error("복호화 실패", e);
+            result = new ApiPrnDto(ApiResultCode.SYSTEM_ERROR);
+            result.setMsg("개인정보 복호화 중 오류가 발생했습니다: " + e.getMessage());
+        }
+
+        result.setData(resData);
+        return result;
+    }
+
+
+
+
+
+
 }

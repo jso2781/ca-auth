@@ -12,10 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/api/ca/workAccessLog")
+@RequestMapping("/api/ca/auth/workAccessLog")
 public class WorkAccessLogController {
 
     @Autowired
@@ -46,7 +47,7 @@ public class WorkAccessLogController {
      * @return
      */
     @PostMapping("/insert")
-    public ResponseEntity<ApiPrnDto> insert(@RequestBody WorkAccessLogInsertVO input, HttpServletRequest request) {
+    public ResponseEntity<ApiPrnDto> insert(@RequestBody WorkAccessLogInsertVO input, HttpServletRequest request, HttpSession session) {
         ApiPrnDto apiPrnDto = workAccessLogService.insert(input);
         ApiResultCode resultCode = ApiResultCode.fromCode(apiPrnDto.getCode());
         return ResponseEntity.status(resultCode.getHttpStatus()).body(apiPrnDto);

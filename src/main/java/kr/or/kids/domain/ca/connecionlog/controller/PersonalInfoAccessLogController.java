@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/api/ca/personalInfoAccessLog")
+@RequestMapping("/api/ca/auth/personalInfoAccessLog")
 public class PersonalInfoAccessLogController {
 
     @Autowired

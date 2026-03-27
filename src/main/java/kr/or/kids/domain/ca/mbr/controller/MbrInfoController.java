@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import kr.or.kids.domain.ca.auth.vo.MbrTokenPVO;
 import kr.or.kids.global.system.common.ApiResultCode;
 import kr.or.kids.global.system.common.vo.PageRequestDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -173,4 +174,36 @@ public class MbrInfoController
 
         return resultMap;
     }
+
+
+    @Operation(summary = "암호화처리", description = "암호화를 한다")
+    @PostMapping(value="/encrypto")
+    @ResponseBody
+    public ResponseEntity<ApiPrnDto> encrypto(@RequestBody MbrTokenPVO input){
+
+        ApiPrnDto apiPrnDto = mbrInfoService.encrypto(input);
+
+        if("0".equals(apiPrnDto.getCode())){
+            return ResponseEntity.ok(apiPrnDto);
+        }else{
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiPrnDto);
+        }
+    }
+
+
+    @Operation(summary = "복호화처리", description = "비번 암호화를 한다")
+    @PostMapping(value="/decrypto")
+    @ResponseBody
+    public ResponseEntity<ApiPrnDto> decrypto(@RequestBody MbrTokenPVO input){
+
+        ApiPrnDto apiPrnDto = mbrInfoService.decrypto(input);
+
+        if("0".equals(apiPrnDto.getCode())){
+            return ResponseEntity.ok(apiPrnDto);
+        }else{
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiPrnDto);
+        }
+    }
+
+
 }

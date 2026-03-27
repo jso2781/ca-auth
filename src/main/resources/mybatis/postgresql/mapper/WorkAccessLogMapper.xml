@@ -4,26 +4,25 @@
 <!-- CONNECTTION_LOG 상세 테이블 MAPPER -->
 <mapper namespace="kr.or.kids.domain.ca.connecionlog.mapper.WorkAccessLogMapper">
 
-
     <!--업무별 접속내역 목록조회 -->
     <sql id="commonList">
         SELECT
-            a.menu_utztn_sn
-             , a.sess_log_sn
-             , a.inpt_dt
-             , a.menu_id
-             , a.url_addr
-             , a.task_se_cd_no
-             , a.cntn_dt
-             , a.acsr_nm
-             , a.rqstr_id
-             , a.flfmt_task_cd
-             , a.etc_memo_cn
-             , a.prvc_incl_yn
-             , a.reg_dt
-             , a.rgtr_id
-             , a.mdfcn_dt
-             , a.mdfr_id
+              a.menu_utztn_sn
+            , a.sess_log_sn
+            , a.inpt_dt
+            , a.menu_id
+            , a.url_addr
+            , a.task_se_cd_no
+            , a.cntn_dt
+            , a.acsr_nm
+            , a.rqstr_id
+            , a.flfmt_task_cd
+            , a.etc_memo_cn
+            , a.prvc_incl_yn
+            , a.reg_dt
+            , a.rgtr_id
+            , a.mdfcn_dt
+            , a.mdfr_id
         FROM kids_own.tb_ca_l_task_acs_hstry a
         WHERE 1=1
         ORDER BY a.menu_utztn_sn DESC
@@ -43,41 +42,40 @@
     <!-- 접속로그 상세(업무별접속내역) 단건 등록 -->
     <insert id="insert" parameterType="WorkAccessLogInsertVO">
         INSERT INTO kids_own.tb_ca_l_task_acs_hstry (
-                                                      menu_utztn_sn
-                                                    ,sess_log_sn
-                                                    ,inpt_dt
-                                                    ,menu_id
-                                                    ,url_addr
-                                                    ,task_se_cd_no
-                                                    ,cntn_dt
-                                                    ,acsr_nm
-                                                    ,rqstr_id
-                                                    ,flfmt_task_cd
-                                                    ,etc_memo_cn
-                                                    ,prvc_incl_yn
-                                                    ,reg_dt
-                                                    ,rgtr_id
-                                                    ,mdfcn_dt
-                                                    ,mdfr_id
-        ) VALUES (
-                   #{menuUtztnSn}
-                 ,#{sessLogSn}
-                 ,Now()
-                 ,#{menuId}
-                 ,#{urlAddr}
-                 ,#{taskSeCdNo}
-                 ,Now()
-                 ,#{acsrNm}
-                 ,#{rgtrId}
-                 ,#{taskSeCd}
-                 ,#{etcMemoCn}
-                 ,'Y'
-                 ,Now()
-                 ,#{rgtrId}
-                 ,Now()
-                 ,#{mdfrId}
-                 );
+                                             menu_utztn_sn
+											,sess_log_sn
+											,inpt_dt
+											,menu_id
+											,url_addr
+											,task_se_cd_no
+											,cntn_dt
+											,acsr_nm
+											,rqstr_id
+											,flfmt_task_cd
+											,etc_memo_cn
+											,prvc_incl_yn
+										    ,reg_dt
+											,rgtr_id
+											,mdfcn_dt
+											,mdfr_id
+                                        ) VALUES (
+											 #{menuUtztnSn}
+										    ,#{sessLogSn}
+											,Now()
+											,#{menuId}
+											,#{urlAddr}
+											,#{taskSeCdNo}
+											,Now()
+											,#{acsrNm}
+											,#{rgtrId}
+											,#{flfmtTaskCd}
+											,#{etcMemoCn}
+											,#{prvcInclYn}
+											,Now()
+											,#{rgtrId}
+											,Now()
+											,#{mdfrId}
+                                     );
     </insert>
-
 
 </mapper>

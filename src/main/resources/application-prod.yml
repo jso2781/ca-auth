@@ -79,7 +79,7 @@ logging:
     jdbc.resultsettable: INFO
 
 mybatis:
-  type-aliases-package: kr.or.kids
+  type-aliases-package: kr.go.kids
   mapper-locations: mybatis/postgresql/mapper/**/*.xml
   configuration:
     cache-enabled: true

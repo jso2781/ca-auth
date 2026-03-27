@@ -14,10 +14,12 @@ public interface ConnectionLogMapper {
     List<ConnectionLogDataResVO> list();
 
     /**  접속 로그  마지막 ID 조회 */
-    public long getLastId();
+    public long getLastId(String rgtrId);
+
     /**  접속 로그 일련번호 조회 */
     public long nextConnectionLogReq();
     /**  접속 로그 정보 단건 등록 */
     public int insert(ConnectionLogInsertReqVO param);
 
+    public Long getSessLogSnByUserId(String srvcUserId);
 }

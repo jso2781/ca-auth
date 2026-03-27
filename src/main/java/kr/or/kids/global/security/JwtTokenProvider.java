@@ -1,6 +1,5 @@
 package kr.or.kids.global.security;
 
-
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -60,7 +59,6 @@ public class JwtTokenProvider {
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)     // key, key 암호화알고리즘설정
                 .compact();
     }
-
     /**
      * <PRE>
      * UpdtTokenCn 생성
@@ -165,6 +163,7 @@ public class JwtTokenProvider {
             return e.getClaims();
         }
     }
+
 
     /**
      * JWT 토큰의 만료시간 얻기
