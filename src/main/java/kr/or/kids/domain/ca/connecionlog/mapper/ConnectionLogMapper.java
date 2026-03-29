@@ -14,7 +14,7 @@ public interface ConnectionLogMapper {
     List<ConnectionLogDataResVO> list();
 
     /**  접속 로그  마지막 ID 조회 */
-    public long getLastId(String rgtrId);
+    public long getLastId(ConnectionLogInsertReqVO param);
 
     /**  접속 로그 일련번호 조회 */
     public long nextConnectionLogReq();

@@ -38,10 +38,11 @@
     </select>
 
     <!-- 마지막 일련 번호 조회 -->
-    <select id="getLastId" parameterType="string"  resultType="long">
+    <select id="getLastId" parameterType="ConnectionLogInsertReqVO"  resultType="long">
         select COALESCE(MAX(sess_log_sn),0)
         FROM  kids_own.tb_ca_l_sesn_log_info_mng
-        WHERE srvc_user_id = #{value}
+        WHERE srvc_user_id = #{srvcUserId}
+        AND lgn_se_cd = #{lgnSeCd}
         AND cntn_se_no = '1'
     </select>
 

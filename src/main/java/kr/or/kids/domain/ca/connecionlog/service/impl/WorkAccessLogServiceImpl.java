@@ -6,6 +6,7 @@ import com.github.pagehelper.PageInfo;
 import kr.or.kids.domain.ca.connecionlog.mapper.ConnectionLogMapper;
 import kr.or.kids.domain.ca.connecionlog.mapper.WorkAccessLogMapper;
 import kr.or.kids.domain.ca.connecionlog.service.WorkAccessLogService;
+import kr.or.kids.domain.ca.connecionlog.vo.ConnectionLogInsertReqVO;
 import kr.or.kids.domain.ca.connecionlog.vo.WorkAccessLogDataResVO;
 import kr.or.kids.domain.ca.connecionlog.vo.WorkAccessLogInsertVO;
 import kr.or.kids.global.system.common.ApiResultCode;
@@ -92,8 +93,12 @@ public class WorkAccessLogServiceImpl implements WorkAccessLogService {
         HashMap<String, Object> bizData = new HashMap<>();
 
         try {
-            // 요청자아이디(rqstrId), 로그인 상태(cntn_se_no='1') 기준으로 가장 나중에 생성된 세션로그일련번호(tb_ca_l_sesn_log_info_mng.sess_log_sn)를 구함.
-            long lastId = connectionLogMapper.getLastId(insertVO.getRgtrId());
+            ConnectionLogInsertReqVO reqVo = new ConnectionLogInsertReqVO();
+            reqVo.setSrvcUserId(insertVO.getRgtrId());
+            reqVo.setLgnSeCd(insertVO.getLgnSeCd());
+
+            // 요청자아이디(rqstrId), 로그인구분코드(1 - 자체로그인, 2 - Any-ID 로그인), 로그인 상태(cntn_se_no='1') 기준으로 가장 나중에 생성된 세션로그일련번호(tb_ca_l_sesn_log_info_mng.sess_log_sn)를 구함.
+            long lastId = connectionLogMapper.getLastId(reqVo);
 
             long id = workAccessLogMapper.nextConnecttionDetailId();
 

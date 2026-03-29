@@ -91,6 +91,9 @@ public class AuthServiceImpl implements AuthService
         return mbrTokenMapper.deleteMbrToken(mbrTokenDVO);
     }
 
+    /**
+     * 자체 로그인을 통한 로그인인 경우(lgnSeCd=1)
+     */
     @Override
     public ApiPrnDto login(MbrTokenPVO loginVO, HttpServletRequest request){
         ApiPrnDto apiPrnDto = new ApiPrnDto(ApiResultCode.SUCCESS);
@@ -122,7 +125,9 @@ public class AuthServiceImpl implements AuthService
             // 로그인 정보와 일치한 경우
             else{
                 String mbrId = userInfo.getMbrId();
-                String lgnSeCd = userInfo.getLgnSeCd();
+
+                // 로그인 구분코드(1 - 자체로그인, 2 - Any-ID 로그인)
+                String lgnSeCd = "1";
 
 //                if(!passwordEncoder.matches(loginVO.getMbrEnpswd(), userInfo.getMbrEnpswd())) {
                 if(loginVO.getEncptMbrPswd() != null && !loginVO.getEncptMbrPswd().equals(userInfo.getEncptMbrPswd())){
