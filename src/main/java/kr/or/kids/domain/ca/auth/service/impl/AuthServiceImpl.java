@@ -282,8 +282,12 @@ public class AuthServiceImpl implements AuthService
                     // 수정자 아이디
                     req.setMdfrId(mbrNo);
 
-                    connectionLogService.insert(req);
+                    ApiPrnDto connLogInsert = connectionLogService.insert(req);
+                    HashMap <String, Object> connLogInsertMap = connLogInsert.getData();
+                    bizData.put("cntnLogSn", connLogInsertMap.get("cntnLogSn"));
                     /**************************************** 공통_세션정보시스템로그 Rest API 호출(tb_ca_l_sesn_log_info_mng 로그인 성공 기록) 끝 ************************************************/
+
+                    apiPrnDto.setData(bizData);
 
                     return apiPrnDto;
                 }
