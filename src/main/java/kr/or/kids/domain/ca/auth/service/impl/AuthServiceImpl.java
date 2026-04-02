@@ -124,6 +124,7 @@ public class AuthServiceImpl implements AuthService
             }
             // 로그인 정보와 일치한 경우
             else{
+                String mbrNo = userInfo.getMbrNo();
                 String mbrId = userInfo.getMbrId();
 
                 // 로그인 구분코드(1 - 자체로그인, 2 - Any-ID 로그인)
@@ -276,10 +277,10 @@ public class AuthServiceImpl implements AuthService
                     req.setTaskSeCd("PP");
 
                     // 등록자 아이디
-                    req.setRgtrId(mbrId);
+                    req.setRgtrId(mbrNo);
 
                     // 수정자 아이디
-                    req.setMdfrId(mbrId);
+                    req.setMdfrId(mbrNo);
 
                     connectionLogService.insert(req);
                     /**************************************** 공통_세션정보시스템로그 Rest API 호출(tb_ca_l_sesn_log_info_mng 로그인 성공 기록) 끝 ************************************************/
@@ -380,6 +381,16 @@ public class AuthServiceImpl implements AuthService
             tokenBlacklistService.blacklist(token, ttl);
         }
 
+        MbrInfoPVO mp = new MbrInfoPVO();
+        mp.setMbrId(mbrId);
+
+        // 회원정보기본 테이블에 회원정보가 존재하는 조회
+        MbrInfoRVO userInfo = mbrInfoMapper.getMbrInfo(mp);
+        String mbrNo = null;
+        if(userInfo != null) {
+            mbrNo = userInfo.getMbrNo();
+        }
+
         /**************************************** 4.공통_세션정보시스템로그 Rest API 호출(tb_ca_l_sesn_log_info_mng 로그아웃 기록) 시작 ************************************************/
         DrugsafeUtil  util = new DrugsafeUtil();
         String clientIp = util.getClientIp(request);
@@ -414,10 +425,10 @@ public class AuthServiceImpl implements AuthService
         req.setTaskSeCd("PP");
 
         // 등록자 아이디
-        req.setRgtrId(mbrId);
+        req.setRgtrId(mbrNo);
 
         // 수정자 아이디
-        req.setMdfrId(mbrId);
+        req.setMdfrId(mbrNo);
 
         connectionLogService.insert(req);
         /**************************************** 4.공통_세션정보시스템로그 Rest API 호출(tb_ca_l_sesn_log_info_mng 로그아웃 기록) 끝 ************************************************/

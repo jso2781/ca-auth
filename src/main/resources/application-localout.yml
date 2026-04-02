@@ -38,7 +38,7 @@ spring:
     enabled: false
   datasource:
     driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
-    url: jdbc:log4jdbc:postgresql://localhost:5432/drugsafe?tcpKeepAlive=true&connectTimeout=10&socketTimeout=600
+    url: jdbc:log4jdbc:postgresql://100.66.39.64:5432/drugsafe?tcpKeepAlive=true&connectTimeout=10&socketTimeout=600
     username: drugsafe
     password: 7mw8kw8mw7kw
 #   url: jdbc:log4jdbc:postgresql://192.168.12.146:5432/postgres?tcpKeepAlive=true&connectTimeout=10&socketTimeout=600

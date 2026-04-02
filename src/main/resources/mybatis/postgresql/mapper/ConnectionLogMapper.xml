@@ -39,11 +39,29 @@
 
     <!-- 마지막 일련 번호 조회 -->
     <select id="getLastId" parameterType="ConnectionLogInsertReqVO"  resultType="long">
-        select COALESCE(MAX(sess_log_sn),0)
-        FROM  kids_own.tb_ca_l_sesn_log_info_mng
-        WHERE srvc_user_id = #{srvcUserId}
-        AND lgn_se_cd = #{lgnSeCd}
-        AND cntn_se_no = '1'
+        with userInfo AS(
+            select
+                AA.mbr_id
+            from(
+                select
+                    mi.mbr_id
+                from kids_own.tb_pp_m_mbr_info mi
+                where mi.mbr_id = #{srvcUserId}
+                and mi.mbr_whdwl_dt is null
+                union all
+                select
+                    mni.emp_no as mbr_id
+                from kids_own.tb_pp_m_mngr_info mni
+                where mni.emp_no = #{srvcUserId}
+            ) AA
+            limit 1
+        )
+        select COALESCE(MAX(lm.sess_log_sn),0)
+        FROM  kids_own.tb_ca_l_sesn_log_info_mng lm
+        INNER JOIN userInfo u
+            ON u.mbr_id = lm.srvc_user_id
+        WHERE lm.lgn_se_cd = #{lgnSeCd}
+        AND lm.cntn_se_no = '1'
     </select>
 
     <!-- 다음 파일 일련번호 -->
