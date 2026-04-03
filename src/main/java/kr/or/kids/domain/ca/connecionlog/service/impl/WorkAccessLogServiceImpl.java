@@ -94,7 +94,7 @@ public class WorkAccessLogServiceImpl implements WorkAccessLogService {
 
         try {
             ConnectionLogInsertReqVO reqVo = new ConnectionLogInsertReqVO();
-            reqVo.setSrvcUserId(insertVO.getRgtrId());
+            reqVo.setSrvcUserId(insertVO.getRqstrId());
             reqVo.setLgnSeCd(insertVO.getLgnSeCd());
 
             // 요청자아이디(rqstrId), 로그인구분코드(1 - 자체로그인, 2 - Any-ID 로그인), 로그인 상태(cntn_se_no='1') 기준으로 가장 나중에 생성된 세션로그일련번호(tb_ca_l_sesn_log_info_mng.sess_log_sn)를 구함.
