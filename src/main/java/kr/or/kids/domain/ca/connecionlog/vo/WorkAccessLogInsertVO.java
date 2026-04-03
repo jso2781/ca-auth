@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 public class WorkAccessLogInsertVO {
 
     private Long menuUtztnSn;           // 메뉴별이용내역 일변번호
-    private Long sessLogSn;             // 접속로그일련번호(PK)
+    private Long sessLogSn;             // 세션로그일련번호(PK)
     private Timestamp inptDt;           // 입력일시
     private String menuId;              // 메뉴아이디
     private String instCd;              // 기관코드
@@ -27,7 +27,6 @@ public class WorkAccessLogInsertVO {
     private String rgtrId;              // 등록자아이디
     private String mdfrId;              // 수정자아이디
     private String lgnSeCd;             // 로그인구분코드(1 - 자체로그인, 2 - Any-ID 로그인)
-    private Long sessLogSn;             // 접속로그일련번호(PK)
     private String trgtMenuNm;          // 대상메뉴명
     private String taskSeCd;            // 업무구분코드
 }
