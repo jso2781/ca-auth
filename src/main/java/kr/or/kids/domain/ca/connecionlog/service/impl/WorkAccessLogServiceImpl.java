@@ -92,13 +92,27 @@ public class WorkAccessLogServiceImpl implements WorkAccessLogService {
         ApiPrnDto apiPrnDto             = new ApiPrnDto();
         HashMap<String, Object> bizData = new HashMap<>();
 
-        try {
-            ConnectionLogInsertReqVO reqVo = new ConnectionLogInsertReqVO();
-            reqVo.setSrvcUserId(insertVO.getRqstrId());
-            reqVo.setLgnSeCd(insertVO.getLgnSeCd());
+        try{
+            long lastId = 0;
 
-            // 요청자아이디(rqstrId), 로그인구분코드(1 - 자체로그인, 2 - Any-ID 로그인), 로그인 상태(cntn_se_no='1') 기준으로 가장 나중에 생성된 세션로그일련번호(tb_ca_l_sesn_log_info_mng.sess_log_sn)를 구함.
-            long lastId = connectionLogMapper.getLastId(reqVo);
+            /*
+             * 포탈 어드민, 전문가 관리등, 항상 로그인된 상태에서 업무별 접근 로그를 기록(세션로그일련번호 UI로부터 전달받음, SessLogSn)
+             */
+            if(insertVO.getSessLogSn() != null){
+                lastId = insertVO.getSessLogSn();
+            }
+            /*
+             * 포탈 사용자 화면에선 로그인 없이 업무별 접근 로그를 기록하므로 세션로그일련번호가 없을 수 있음.
+             */
+            else{
+                ConnectionLogInsertReqVO reqVo = new ConnectionLogInsertReqVO();
+                reqVo.setSrvcUserId(insertVO.getRqstrId());
+                reqVo.setLgnSeCd(insertVO.getLgnSeCd());
+
+                // 요청자아이디(rqstrId), 로그인구분코드(1 - 자체로그인, 2 - Any-ID 로그인), 로그인 상태(cntn_se_no='1') 기준으로 가장 나중에 생성된 세션로그일련번호(tb_ca_l_sesn_log_info_mng.sess_log_sn)를 구함.
+                lastId = connectionLogMapper.getLastId(reqVo);
+            }
+
 
             long id = workAccessLogMapper.nextConnecttionDetailId();
 
