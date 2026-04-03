@@ -67,7 +67,7 @@
 											,#{taskSeCdNo}
 											,Now()
 											,#{acsrNm}
-											,#{rgtrId}
+											,#{rqstrId}
 											,#{flfmtTaskCd}
 											,#{etcMemoCn}
 											,#{prvcInclYn}
