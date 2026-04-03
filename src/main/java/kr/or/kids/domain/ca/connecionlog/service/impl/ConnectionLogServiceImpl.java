@@ -117,7 +117,7 @@ public class ConnectionLogServiceImpl implements ConnectionLogService {
 
             result.setCode("0");
             result.setMsg("로그인 접속정보가  등록되었습니다.");
-            bizData.put("cntnLogSn", connectLogNextId);
+            bizData.put("sessLogSn", connectLogNextId);
 
         } catch(Exception e) {
             result = DrugsafeUtil.getApiPrnDto("-1", e.toString());

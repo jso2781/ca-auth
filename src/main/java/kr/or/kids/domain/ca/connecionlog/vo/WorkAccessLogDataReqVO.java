@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 public class WorkAccessLogDataReqVO {
 
     private String prvcHstryMdfcnSn;   // 접속자아이디
-    private BigDecimal cntnLogSn;      // 접속로그일련번호(PK)
+    private BigDecimal sessLogSn;      // 접속로그일련번호(PK)
     private Timestamp inptDt;          // 입력일시
     private String instCd;             // 기관코드
     private String trgtMenuNm;         // 대상메뉴명
