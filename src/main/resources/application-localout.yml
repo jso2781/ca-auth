@@ -20,7 +20,7 @@ spring:
   redis:
     host: 127.0.0.1
     port: 6379
-    password: drugsafe123456
+#    password: drugsafe123456
     timeout: 2000ms
   servlet:
     multipart:
@@ -111,6 +111,10 @@ logging:
     kr.or.kids: DEBUG
     jdbc.sqltiming: INFO
     jdbc.resultsettable: INFO
+
+crypto:
+  mock-base64:
+    enabled: true
 
 mybatis:
   type-aliases-package: kr.or.kids

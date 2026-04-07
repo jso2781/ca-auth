@@ -7,19 +7,60 @@ import kr.or.kids.domain.ca.crypto.vo.MbrEncryptPVO;
 import kr.or.kids.global.system.common.ApiResultCode;
 import kr.or.kids.global.system.common.vo.ApiPrnDto;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.softforum.xdbe.xCrypto;
 
 import java.nio.charset.StandardCharsets;
-import java.sql.Array;
+import java.util.Base64;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
 @Service
 public class CryptoServiceImpl implements CryptoService {
+
+    @Value("${crypto.xdsp-pool-config:/app/xecuredb/conf/xdsp_pool.properties}")
+    private String xdspPoolConfig;
+
+    @Value("${crypto.mock-base64.enabled:false}")
+    private boolean mockBase64Enabled;
+
+    private void registerCryptoProfiles(boolean includeHash) {
+        if (mockBase64Enabled) {
+            return;
+        }
+        xCrypto.RegisterEx("normal", 2, xdspPoolConfig, "pool1", "drugsafe_db", "drugsafe_ow", "drugsafe_tb", "normal");
+        if (includeHash) {
+            xCrypto.RegisterEx("hash", 2, xdspPoolConfig, "pool1", "drugsafe_db", "drugsafe_ow", "drugsafe_tb", "hash");
+        }
+    }
+
+    private String encryptValue(String profile, String value) {
+        if (value == null || value.isEmpty()) {
+            return value;
+        }
+        if (mockBase64Enabled) {
+            return Base64.getEncoder().encodeToString(value.getBytes(StandardCharsets.UTF_8));
+        }
+        return xCrypto.Encrypt(profile, value);
+    }
+
+    private String decryptValue(String profile, String value) {
+        if (value == null || value.isEmpty()) {
+            return value;
+        }
+        if (mockBase64Enabled) {
+            try {
+                return new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8);
+            } catch (IllegalArgumentException e) {
+                log.debug("Mock base64 decode skipped, returning plain text. profile={}, value={}", profile, value);
+                return value;
+            }
+        }
+        return xCrypto.Decrypt(profile, value);
+    }
 
     /**
      * 암호화
@@ -29,17 +70,16 @@ public class CryptoServiceImpl implements CryptoService {
         ApiPrnDto result = new ApiPrnDto(ApiResultCode.SUCCESS);
         HashMap<String, Object> resData = new HashMap<>();
         // 암호화 초기화 및 실행
-        xCrypto.RegisterEx("normal", 2, "/app/xecuredb/conf/xdsp_pool.properties", "pool1", "drugsafe_db", "drugsafe_ow", "drugsafe_tb", "normal");
-        xCrypto.RegisterEx("hash", 2, "/app/xecuredb/conf/xdsp_pool.properties", "pool1", "drugsafe_db", "drugsafe_ow", "drugsafe_tb", "hash");
+        registerCryptoProfiles(true);
 
         try {
             String mbrFlnm = reqVO.getMbrFlnm();      // 회원명
             String mbrEmlNm = reqVO.getMbrEmlNm();    // 회원 이메일
             String mbrPswd = reqVO.getMbrPswd();      // 회원 비밀번호
             String mbrTelno = reqVO.getMbrTelno();    // 회원 전화번호
-            String empTelno = reqVO.getEmpTelno();    // 직원전화번호
-            String empEmlNm = reqVO.getEmpEmlNm();    // 직원이메일명
-            String mngrPswd = reqVO.getMngrPswd();    // 관리자 비밀번호  
+            String empTelno = reqVO.getMbrTelno();    // 직원전화번호
+            String empEmlNm = reqVO.getMbrEmlNm();    // 직원이메일명
+            String mngrPswd = reqVO.getMngrPswd();    // 관리자 비밀번호
             String cnstnMbcmtRrno = reqVO.getCnstnMbcmtRrno();    // 자문위원주민등록번호
             String cnstnMbcmtActno = reqVO.getCnstnMbcmtActno();  // 자문위원계좌번호
             String bfrPswd = reqVO.getBfrPswd();
@@ -54,80 +94,79 @@ public class CryptoServiceImpl implements CryptoService {
             /**
              * BizProc
              */
-                if (mbrFlnm != null && !mbrFlnm.isEmpty()) {
+            if (mbrFlnm != null && !mbrFlnm.isEmpty()) {
+                String encryptMbrFlnm = encryptValue("normal", mbrFlnm);
+                resData.put("encptMbrFlnm", encryptMbrFlnm);
+                result.setMsg("회원명 암호화 완료");
 
-                    String encryptMbrFlnm = xCrypto.Encrypt("normal", mbrFlnm,"UTF-8");
-                    resData.put("encptMbrFlnm", encryptMbrFlnm);
-                    result.setMsg("회원명 암호화 완료");
+            }else if (mbrEmlNm != null && !mbrEmlNm.isEmpty()) {
+                String encryptMbrEmlNm = encryptValue("normal", mbrEmlNm);
+                resData.put("encptMbrEmlNm", encryptMbrEmlNm);
+                result.setMsg("회원이메일 암호화 완료");
 
-                }else if (mbrEmlNm != null && !mbrEmlNm.isEmpty()) {
-                    String encryptMbrEmlNm = xCrypto.Encrypt("normal", mbrEmlNm,"UTF-8");
-                    resData.put("encptMbrEmlNm", encryptMbrEmlNm);
-                    result.setMsg("회원이메일 암호화 완료");
+            }else if (mbrTelno != null && !mbrTelno.isEmpty()) {
+                String encryptMbrTelno = encryptValue("normal", mbrTelno);
+                resData.put("encptMbrTelno", encryptMbrTelno);
+                result.setMsg("회원 전화번호 암호화 완료");
 
-                }else if (mbrTelno != null && !mbrTelno.isEmpty()) {
-                    String encryptMbrTelno = xCrypto.Encrypt("normal", mbrTelno,"UTF-8");
-                    resData.put("encptMbrTelno", encryptMbrTelno);
-                    result.setMsg("회원 전화번호 암호화 완료");
+            }else if (mbrPswd != null && !mbrPswd.isEmpty()) {
+                String encrptMbrPswd = encryptValue("hash", mbrPswd);
+                resData.put("encptMbrPswd", encrptMbrPswd);
+                result.setMsg("사용자 정보 암호화 완료");
 
-                }else if (mbrPswd != null && !mbrPswd.isEmpty()) {
-                    String encrptMbrPswd = xCrypto.Encrypt("hash", mbrPswd,"UTF-8");
-                    resData.put("encptMbrPswd", encrptMbrPswd);
-                    result.setMsg("사용자 정보 암호화 완료");
+            }else if (empTelno != null && !empTelno.isEmpty()) {
+                String encptempTelno = encryptValue("hash", empTelno);
+                resData.put("encptempTelno", encptempTelno);
+                result.setMsg("직원 전화번호 암호화 완료");
 
-                }else if (empTelno != null && !empTelno.isEmpty()) {
-                    String encptempTelno = xCrypto.Encrypt("hash", empTelno,"UTF-8");
-                    resData.put("encptempTelno", encptempTelno);
-                    result.setMsg("직원 전화번호 암호화 완료");
+            }else if (empEmlNm != null && !empEmlNm.isEmpty()) {
+                String encptEmpEmlNm = encryptValue("hash", empEmlNm);
+                resData.put("encptEmpEmlNm", encptEmpEmlNm);
+                result.setMsg("직원 이메일명 암호화 완료");
 
-                }else if (empEmlNm != null && !empEmlNm.isEmpty()) {
-                    String encptEmpEmlNm = xCrypto.Encrypt("hash", empEmlNm,"UTF-8");
-                    resData.put("encptEmpEmlNm", encptEmpEmlNm);
-                    result.setMsg("직원 이메일명 암호화 완료");
+            }else if (cnstnMbcmtRrno != null && !cnstnMbcmtRrno.isEmpty()) {
+                String encptCnstnMbcmtRrno = encryptValue("hash", cnstnMbcmtRrno);
+                resData.put("encptCnstnMbcmtRrno", encptCnstnMbcmtRrno);
+                result.setMsg("자문위원 정보 암호화 완료");
 
-                }else if (cnstnMbcmtRrno != null && !cnstnMbcmtRrno.isEmpty()) {
-                    String encptCnstnMbcmtRrno = xCrypto.Encrypt("hash", cnstnMbcmtRrno,"UTF-8");
-                    resData.put("encptCnstnMbcmtRrno", encptCnstnMbcmtRrno);
-                    result.setMsg("자문위원 정보 암호화 완료");
+            }else if (cnstnMbcmtActno != null && !cnstnMbcmtActno.isEmpty()) {
+                String encptCnstnMbcmtActno = encryptValue("hash", cnstnMbcmtActno);
+                resData.put("encptCnstnMbcmtActno", encptCnstnMbcmtActno);
+                result.setMsg("자문위원 계좌정보 암호화 완료");
 
-                }else if (cnstnMbcmtActno != null && !cnstnMbcmtActno.isEmpty()) {
-                    String encptCnstnMbcmtActno = xCrypto.Encrypt("hash", cnstnMbcmtActno,"UTF-8");
-                    resData.put("encptCnstnMbcmtActno", encptCnstnMbcmtActno);
-                    result.setMsg("자문위원 계좌정보 암호화 완료");
+            }else if (mngrPswd != null && !mngrPswd.isEmpty()) {
+                String encptMngrPswd = encryptValue("hash", mngrPswd);
+                resData.put("encptMngrPswd", encptMngrPswd);
+                result.setMsg("관리자 비밀번호 암호화 완료");
+                // --- 신규 항목 추가 ---
+            }else if (bfrPswd != null && !bfrPswd.isEmpty()) {
+                resData.put("encptBfrPswd", encryptValue("hash", bfrPswd));
+                result.setMsg("이전비밀번호 암호화 완료");
+            } else if (cmntPswd != null && !cmntPswd.isEmpty()) {
+                resData.put("encptCmntPswd", encryptValue("hash", cmntPswd));
+                result.setMsg("댓글비밀번호 암호화 완료");
+            } else if (picTelno != null && !picTelno.isEmpty()) {
+                resData.put("encptPicTelno", encryptValue("normal", picTelno));
+                result.setMsg("담당자전화번호 암호화 완료");
+            } else if (sttyAgtTelno != null && !sttyAgtTelno.isEmpty()) {
+                resData.put("encptSttyAgtTelno", encryptValue("normal", sttyAgtTelno));
+                result.setMsg("법정대리인전화번호 암호화 완료");
+            } else if (exprtFlnm != null && !exprtFlnm.isEmpty()) {
+                resData.put("encptExprtFlnm", encryptValue("normal", exprtFlnm));
+                result.setMsg("전문가성명 암호화 완료");
+            } else if (exprtInstEmlNm != null && !exprtInstEmlNm.isEmpty()) {
+                resData.put("encptExprtInstEmlNm", encryptValue("normal", exprtInstEmlNm));
+                result.setMsg("전문가기관이메일 암호화 완료");
+            } else if (wrtrFlnm != null && !wrtrFlnm.isEmpty()) {
+                resData.put("encptWrtrFlnm", encryptValue("normal", wrtrFlnm));
+                result.setMsg("작성자성명 암호화 완료");
+            } else if (wrtrTelno != null && !wrtrTelno.isEmpty()) {
+                resData.put("encptWrtrTelno", encryptValue("normal", wrtrTelno));
+                result.setMsg("작성자전화번호 암호화 완료");
 
-                }else if (mngrPswd != null && !mngrPswd.isEmpty()) {
-                    String encptMngrPswd = xCrypto.Encrypt("hash", mngrPswd,"UTF-8");
-                    resData.put("encptMngrPswd", encptMngrPswd);
-                    result.setMsg("관리자 비밀번호 암호화 완료");
-                    // --- 신규 항목 추가 ---
-                }else if (bfrPswd != null && !bfrPswd.isEmpty()) {
-                    resData.put("encptBfrPswd", xCrypto.Encrypt("hash", bfrPswd,"UTF-8"));
-                    result.setMsg("이전비밀번호 암호화 완료");
-                } else if (cmntPswd != null && !cmntPswd.isEmpty()) {
-                    resData.put("encptCmntPswd", xCrypto.Encrypt("hash", cmntPswd,"UTF-8"));
-                    result.setMsg("댓글비밀번호 암호화 완료");
-                } else if (picTelno != null && !picTelno.isEmpty()) {
-                    resData.put("encptPicTelno", xCrypto.Encrypt("normal", picTelno,"UTF-8"));
-                    result.setMsg("담당자전화번호 암호화 완료");
-                } else if (sttyAgtTelno != null && !sttyAgtTelno.isEmpty()) {
-                    resData.put("encptSttyAgtTelno", xCrypto.Encrypt("normal", sttyAgtTelno,"UTF-8"));
-                    result.setMsg("법정대리인전화번호 암호화 완료");
-                } else if (exprtFlnm != null && !exprtFlnm.isEmpty()) {
-                    resData.put("encptExprtFlnm", xCrypto.Encrypt("normal", exprtFlnm,"UTF-8"));
-                    result.setMsg("전문가성명 암호화 완료");
-                } else if (exprtInstEmlNm != null && !exprtInstEmlNm.isEmpty()) {
-                    resData.put("encptExprtInstEmlNm", xCrypto.Encrypt("normal", exprtInstEmlNm,"UTF-8"));
-                    result.setMsg("전문가기관이메일 암호화 완료");
-                } else if (wrtrFlnm != null && !wrtrFlnm.isEmpty()) {
-                    resData.put("encptWrtrFlnm", xCrypto.Encrypt("normal", wrtrFlnm,"UTF-8"));
-                    result.setMsg("작성자성명 암호화 완료");
-                } else if (wrtrTelno != null && !wrtrTelno.isEmpty()) {
-                    resData.put("encptWrtrTelno", xCrypto.Encrypt("normal", wrtrTelno,"UTF-8"));
-                    result.setMsg("작성자전화번호 암호화 완료");
-
-                } else {
-                    result.setMsg("암호화할 데이터(항목)가 입력되지 않았습니다.");
-                }
+            } else {
+                result.setMsg("암호화할 데이터(항목)가 입력되지 않았습니다.");
+            }
 
         } catch(Exception e) {
             log.error("사용자 정보 암호화 실패", e);
@@ -147,8 +186,7 @@ public class CryptoServiceImpl implements CryptoService {
         List<MbrEncryptPVO> items = reqList.getListItems();
         try {
             // 암호화 초기화 — 목록 전체에 한 번만 실행
-            xCrypto.RegisterEx("normal", 2, "/app/xecuredb/conf/xdsp_pool.properties", "pool1", "drugsafe_db", "drugsafe_ow", "drugsafe_tb", "normal");
-            xCrypto.RegisterEx("hash",   2, "/app/xecuredb/conf/xdsp_pool.properties", "pool1", "drugsafe_db", "drugsafe_ow", "drugsafe_tb", "hash");
+            registerCryptoProfiles(true);
 
             if(items.size() > 0) {
                 for (MbrEncryptPVO reqVO : items) {
@@ -166,42 +204,42 @@ public class CryptoServiceImpl implements CryptoService {
 
                     // ── normal 암호화 ─────────────────────────────────────────────────
                     if (mbrFlnm != null && !mbrFlnm.isEmpty()) {
-                        resData.put("encptMbrFlnm", xCrypto.Encrypt("normal", mbrFlnm,"UTF-8"));
+                        resData.put("encptMbrFlnm", encryptValue("normal", mbrFlnm));
                     }
                     if (mbrEmlNm != null && !mbrEmlNm.isEmpty()) {
-                        resData.put("encptMbrEmlNm", xCrypto.Encrypt("normal", mbrEmlNm,"UTF-8"));
+                        resData.put("encptMbrEmlNm", encryptValue("normal", mbrEmlNm));
                     }
                     if (mbrTelno != null && !mbrTelno.isEmpty()) {
-                        resData.put("encptMbrTelno", xCrypto.Encrypt("normal", mbrTelno,"UTF-8"));
+                        resData.put("encptMbrTelno", encryptValue("normal", mbrTelno));
                     }
                     if (empTelno != null && !empTelno.isEmpty()) {
-                        resData.put("encptEmpTelno", xCrypto.Encrypt("normal", empTelno,"UTF-8"));
+                        resData.put("encptEmpTelno", encryptValue("normal", empTelno));
                     }
                     if (empEmlNm != null && !empEmlNm.isEmpty()) {
-                        resData.put("encptEmpEmlNm", xCrypto.Encrypt("normal", empEmlNm,"UTF-8"));
+                        resData.put("encptEmpEmlNm", encryptValue("normal", empEmlNm));
                     }
                     if (cnstnMbcmtRrno != null && !cnstnMbcmtRrno.isEmpty()) {
-                        resData.put("encptCnstnMbcmtRrno", xCrypto.Encrypt("normal", cnstnMbcmtRrno,"UTF-8"));
+                        resData.put("encptCnstnMbcmtRrno", encryptValue("normal", cnstnMbcmtRrno));
                     }
                     if (cnstnMbcmtActno != null && !cnstnMbcmtActno.isEmpty()) {
-                        resData.put("encptCnstnMbcmtActno", xCrypto.Encrypt("normal", cnstnMbcmtActno,"UTF-8"));
+                        resData.put("encptCnstnMbcmtActno", encryptValue("normal", cnstnMbcmtActno));
                     }
                     // ── hash 암호화 ───────────────────────────────────────────────────
                     if (mbrPswd != null && !mbrPswd.isEmpty()) {
-                        resData.put("encptMbrPswd", xCrypto.Encrypt("hash", mbrPswd,"UTF-8"));
+                        resData.put("encptMbrPswd", encryptValue("hash", mbrPswd));
                     }
                     if (mngrPswd != null && !mngrPswd.isEmpty()) {
-                        resData.put("encptMngrPswd", xCrypto.Encrypt("hash", mngrPswd,"UTF-8"));
+                        resData.put("encptMngrPswd", encryptValue("hash", mngrPswd));
                     }
                     // 추가 신규 필드 암호화
-                    if (reqVO.getBfrPswd() != null) resData.put("encptBfrPswd", xCrypto.Encrypt("hash", reqVO.getBfrPswd(),"UTF-8"));
-                    if (reqVO.getCmntPswd() != null) resData.put("encptCmntPswd", xCrypto.Encrypt("hash", reqVO.getCmntPswd(),"UTF-8"));
-                    if (reqVO.getPicTelno() != null) resData.put("encptPicTelno", xCrypto.Encrypt("normal", reqVO.getPicTelno(),"UTF-8"));
-                    if (reqVO.getSttyAgtTelno() != null) resData.put("encptSttyAgtTelno", xCrypto.Encrypt("normal", reqVO.getSttyAgtTelno(),"UTF-8"));
-                    if (reqVO.getExprtFlnm() != null) resData.put("encptExprtFlnm", xCrypto.Encrypt("normal", reqVO.getExprtFlnm(),"UTF-8"));
-                    if (reqVO.getExprtInstEmlNm() != null) resData.put("encptExprtInstEmlNm", xCrypto.Encrypt("normal", reqVO.getExprtInstEmlNm(),"UTF-8"));
-                    if (reqVO.getWrtrFlnm() != null) resData.put("encptWrtrFlnm", xCrypto.Encrypt("normal", reqVO.getWrtrFlnm(),"UTF-8"));
-                    if (reqVO.getWrtrTelno() != null) resData.put("encptWrtrTelno", xCrypto.Encrypt("normal", reqVO.getWrtrTelno(),"UTF-8"));
+                    if (reqVO.getBfrPswd() != null) resData.put("encptBfrPswd", encryptValue("hash", reqVO.getBfrPswd()));
+                    if (reqVO.getCmntPswd() != null) resData.put("encptCmntPswd", encryptValue("hash", reqVO.getCmntPswd()));
+                    if (reqVO.getPicTelno() != null) resData.put("encptPicTelno", encryptValue("normal", reqVO.getPicTelno()));
+                    if (reqVO.getSttyAgtTelno() != null) resData.put("encptSttyAgtTelno", encryptValue("normal", reqVO.getSttyAgtTelno()));
+                    if (reqVO.getExprtFlnm() != null) resData.put("encptExprtFlnm", encryptValue("normal", reqVO.getExprtFlnm()));
+                    if (reqVO.getExprtInstEmlNm() != null) resData.put("encptExprtInstEmlNm", encryptValue("normal", reqVO.getExprtInstEmlNm()));
+                    if (reqVO.getWrtrFlnm() != null) resData.put("encptWrtrFlnm", encryptValue("normal", reqVO.getWrtrFlnm()));
+                    if (reqVO.getWrtrTelno() != null) resData.put("encptWrtrTelno", encryptValue("normal", reqVO.getWrtrTelno()));
                     resList.add(resData);
                 }
 
@@ -230,32 +268,34 @@ public class CryptoServiceImpl implements CryptoService {
         ApiPrnDto result = new ApiPrnDto(ApiResultCode.SUCCESS);
         HashMap<String, Object> resData = new HashMap<>();
         // 암호화 초기화 및 실행
-        xCrypto.RegisterEx("normal", 2, "/app/xecuredb/conf/xdsp_pool.properties", "pool1", "drugsafe_db", "drugsafe_ow", "drugsafe_tb", "normal");
+        registerCryptoProfiles(false);
         try {
-                /**
-                 * BizProc
-                 */
-                log.info("reqVO.getEncptMbrFlnm()::::::::"+ reqVO.getEncptMbrFlnm());
-                String encMbrFlnm = reqVO.getEncptMbrFlnm();                    // 회원명
-                String encMbrEmlNm = reqVO.getEncptMbrEmlNm();                  // 회원 이메일
-                String encMbrPswd = reqVO.getEncptMbrPswd();                    // 비밀번호
-                String encMbrTelno = reqVO.getEncptMbrTelno();                  // 전화번호
-                String encEmpTelno = reqVO.getMbrTelno();                       // 직원전화번호
-                String encEmpEmlNm = reqVO.getMbrEmlNm();                       // 직원이메일명
-                String encMngrPswd = reqVO.getMngrPswd();                       // 관리자비밀번호
-                String encptCnstnMbcmtRrno = reqVO.getEncptCnstnMbcmtRrno();    // 자문위원주민등록번호
-                String encptCnstnMbcmtActno = reqVO.getEncptCnstnMbcmtActno();  // 자문위원계좌번호
-                // 포털
-                String encptBfrPswd = reqVO.getEncptBfrPswd();
-                String encptCmntPswd = reqVO.getEncptCmntPswd();
-                String encptPicTelno = reqVO.getEncptPicTelno();
-                String encptSttyAgtTelno = reqVO.getEncptSttyAgtTelno();
-                String encptExprtFlnm = reqVO.getEncptExprtFlnm();
-                String encptExprtInstEmlNm = reqVO.getEncptExprtInstEmlNm();
-                String encptWrtrFlnm = reqVO.getEncptWrtrFlnm();
-                String encptWrtrTelno = reqVO.getEncptWrtrTelno();
+            /**
+             * BizProc
+             */
 
-             if (encMbrPswd != null && !encMbrPswd.isEmpty()) {
+            log.info("reqVO.getEncptMbrFlnm()::::::::"+ reqVO.getEncptMbrFlnm());
+
+            String encMbrFlnm = reqVO.getEncptMbrFlnm();                    // 회원명
+            String encMbrEmlNm = reqVO.getEncptMbrEmlNm();                  // 회원 이메일
+            String encMbrPswd = reqVO.getEncptMbrPswd();                    // 비밀번호
+            String encMbrTelno = reqVO.getEncptMbrTelno();                  // 전화번호
+            String encEmpTelno = reqVO.getMbrTelno();                       // 직원전화번호
+            String encEmpEmlNm = reqVO.getMbrEmlNm();                       // 직원이메일명
+            String encMngrPswd = reqVO.getMngrPswd();                       // 관리자비밀번호
+            String encptCnstnMbcmtRrno = reqVO.getEncptCnstnMbcmtRrno();    // 자문위원주민등록번호
+            String encptCnstnMbcmtActno = reqVO.getEncptCnstnMbcmtActno();  // 자문위원계좌번호
+            // 포털
+            String encptBfrPswd = reqVO.getEncptBfrPswd();
+            String encptCmntPswd = reqVO.getEncptCmntPswd();
+            String encptPicTelno = reqVO.getEncptPicTelno();
+            String encptSttyAgtTelno = reqVO.getEncptSttyAgtTelno();
+            String encptExprtFlnm = reqVO.getEncptExprtFlnm();
+            String encptExprtInstEmlNm = reqVO.getEncptExprtInstEmlNm();
+            String encptWrtrFlnm = reqVO.getEncptWrtrFlnm();
+            String encptWrtrTelno = reqVO.getEncptWrtrTelno();
+
+            if (encMbrPswd != null && !encMbrPswd.isEmpty()) {
                 result = new ApiPrnDto(ApiResultCode.VALIDATION_ERROR); // 상황에 맞는 코드 사용
                 result.setMsg("비밀번호는 복호화가 불가합니다.");
             }else if (encMngrPswd != null && !encMngrPswd.isEmpty()) {
@@ -271,60 +311,65 @@ public class CryptoServiceImpl implements CryptoService {
                 result = new ApiPrnDto(ApiResultCode.VALIDATION_ERROR);
                 result.setMsg("이전비밀번호는 복호화가 불가합니다.");
             } else if (encptCmntPswd != null && !encptCmntPswd.isEmpty()) {
-                 result = new ApiPrnDto(ApiResultCode.VALIDATION_ERROR);
-                 result.setMsg("댓글비밀번호는 복호화가 불가합니다.");
-             }else if (encMbrFlnm != null && !encMbrFlnm.isEmpty()) {
+                result = new ApiPrnDto(ApiResultCode.VALIDATION_ERROR);
+                result.setMsg("댓글비밀번호는 복호화가 불가합니다.");
+            }else if (encMbrFlnm != null && !encMbrFlnm.isEmpty()) {
 
-                 log.info("encMbrFlnm:::00::::"+ encMbrFlnm);
-                 String decryptMbrEmlNm = xCrypto.Decrypt("normal", reqVO.getEncptMbrFlnm(),"UTF-8");
-                 log.info("decryptMbrEmlNm_test::::1::::"+ decryptMbrEmlNm);
-                 resData.put("decptMbrFlnm", decryptMbrEmlNm);
+                log.info("encMbrFlnm::::::::"+ encMbrFlnm);
+
+                String decryptMbrFlnm = decryptKo(encMbrFlnm);
+
+                resData.put("decptMbrFlnm", decryptMbrFlnm);
+
+                String decryptMbrEmlNm_test = decryptValue("normal", reqVO.getEncptMbrFlnm());
+
+                log.info("decryptMbrEmlNm_test::::::::"+ decryptMbrEmlNm_test);
 
                 result.setMsg("회원명 복호화 완료");
             }else if (encMbrEmlNm != null && !encMbrEmlNm.isEmpty()) {
-                String decryptMbrEmlNm = xCrypto.Decrypt("normal", encMbrEmlNm,"UTF-8");
+                String decryptMbrEmlNm = decryptValue("normal", encMbrEmlNm);
                 resData.put("decptMbrEmlNm", decryptMbrEmlNm);
                 result.setMsg("회원 이메일 복호화 완료");
             }else if (encMbrTelno != null && !encMbrTelno.isEmpty()) {
-                String decryptMbrTelno = xCrypto.Decrypt("normal", encMbrTelno,"UTF-8");
+                String decryptMbrTelno = decryptValue("normal", encMbrTelno);
                 resData.put("decptMbrTelno", decryptMbrTelno);
                 result.setMsg("회원 전화번호 복호화 완료");
             }else if (encEmpTelno != null && !encEmpTelno.isEmpty()) {
-                String decptEncEmpTelno = xCrypto.Decrypt("normal", encEmpTelno,"UTF-8");
+                String decptEncEmpTelno = decryptValue("normal", encEmpTelno);
                 resData.put("decptEncEmpTelno", decptEncEmpTelno);
                 result.setMsg("직원 전화번호 복호화 완료");
             }else if (encEmpEmlNm != null && !encEmpEmlNm.isEmpty()) {
-                String decptEmpEmlNm = xCrypto.Decrypt("normal", encEmpEmlNm,"UTF-8");
+                String decptEmpEmlNm = decryptValue("normal", encEmpEmlNm);
                 resData.put("decptEmpEmlNm", decptEmpEmlNm);
                 result.setMsg("직원 전화번호 복호화 완료");
             }else if (encptCnstnMbcmtRrno != null && !encptCnstnMbcmtRrno.isEmpty()) {
-                String decptCnstnMbcmtRrno = xCrypto.Decrypt("normal", encptCnstnMbcmtRrno,"UTF-8");
+                String decptCnstnMbcmtRrno = decryptValue("normal", encptCnstnMbcmtRrno);
                 resData.put("decptCnstnMbcmtRrno", decptCnstnMbcmtRrno);
-                result.setMsg("자문위원 정보 암호화 완료");
+                result.setMsg("자문위원 정보 복호화 완료");
             }else if (encptCnstnMbcmtActno != null && !encptCnstnMbcmtActno.isEmpty()) {
-                 String decptCnstnMbcmtActno = xCrypto.Decrypt("normal", encptCnstnMbcmtActno,"UTF-8");
-                 resData.put("decptCnstnMbcmtActno", decptCnstnMbcmtActno);
-                 result.setMsg("자문위원 계좌정보 암호화 완료");
-                 // --- 복호화 불가 항목 (Hash) ---
+                String decptCnstnMbcmtActno = decryptValue("normal", encptCnstnMbcmtActno);
+                resData.put("decptCnstnMbcmtActno", decptCnstnMbcmtActno);
+                result.setMsg("자문위원 계좌정보 복호화 완료");
+                // --- 복호화 불가 항목 (Hash) ---
             }else if (encptPicTelno != null && !encptPicTelno.isEmpty()) {
-                  resData.put("decptPicTelno", xCrypto.Decrypt("normal", encptPicTelno,"UTF-8"));
-                  result.setMsg("담당자전화번호 복호화 완료");
+                resData.put("decptPicTelno", decryptValue("normal", encptPicTelno));
+                result.setMsg("담당자전화번호 복호화 완료");
             } else if (encptSttyAgtTelno != null && !encptSttyAgtTelno.isEmpty()) {
-                   resData.put("decptSttyAgtTelno", xCrypto.Decrypt("normal", encptSttyAgtTelno,"UTF-8"));
-                   result.setMsg("법정대리인전화번호 복호화 완료");
+                resData.put("decptSttyAgtTelno", decryptValue("normal", encptSttyAgtTelno));
+                result.setMsg("법정대리인전화번호 복호화 완료");
             } else if (encptExprtFlnm != null && !encptExprtFlnm.isEmpty()) {
-                   resData.put("decptExprtFlnm", xCrypto.Decrypt("normal", encptExprtFlnm,"UTF-8"));
-                   result.setMsg("전문가성명 복호화 완료");
+                resData.put("decptExprtFlnm", decryptValue("normal", encptExprtFlnm));
+                result.setMsg("전문가성명 복호화 완료");
             } else if (encptExprtInstEmlNm != null && !encptExprtInstEmlNm.isEmpty()) {
-                   resData.put("decptExprtInstEmlNm", xCrypto.Decrypt("normal", encptExprtInstEmlNm,"UTF-8"));
-                   result.setMsg("전문가기관이메일 복호화 완료");
+                resData.put("decptExprtInstEmlNm", decryptValue("normal", encptExprtInstEmlNm));
+                result.setMsg("전문가기관이메일 복호화 완료");
             } else if (encptWrtrFlnm != null && !encptWrtrFlnm.isEmpty()) {
-                   resData.put("decptWrtrFlnm", xCrypto.Decrypt("normal", encptWrtrFlnm,"UTF-8"));
-                   result.setMsg("작성자성명 복호화 완료");
+                resData.put("decptWrtrFlnm", decryptValue("normal", encptWrtrFlnm));
+                result.setMsg("작성자성명 복호화 완료");
             } else if (encptWrtrTelno != null && !encptWrtrTelno.isEmpty()) {
-                   resData.put("decptWrtrTelno", xCrypto.Decrypt("normal", encptWrtrTelno,"UTF-8"));
-                   result.setMsg("작성자전화번호 복호화 완료");
-             }
+                resData.put("decptWrtrTelno", decryptValue("normal", encptWrtrTelno));
+                result.setMsg("작성자전화번호 복호화 완료");
+            }
 
             else {
                 result.setMsg("복호화할 데이터(항목)가 입력되지 않았습니다.");
@@ -351,8 +396,7 @@ public class CryptoServiceImpl implements CryptoService {
         List<MbrEncryptPVO> items = reqList.getListItems();
         try {
             // 암호화 초기화 — 목록 전체에 한 번만 실행
-            xCrypto.RegisterEx("normal", 2, "/app/xecuredb/conf/xdsp_pool.properties", "pool1", "drugsafe_db", "drugsafe_ow", "drugsafe_tb", "normal");
-            xCrypto.RegisterEx("hash",   2, "/app/xecuredb/conf/xdsp_pool.properties", "pool1", "drugsafe_db", "drugsafe_ow", "drugsafe_tb", "hash");
+            registerCryptoProfiles(true);
 
             if(items.size() > 0) {
                 for (MbrEncryptPVO reqVO : items) {
@@ -380,32 +424,32 @@ public class CryptoServiceImpl implements CryptoService {
 
                     // ── normal 복호화 ─────────────────────────────────────────────────
                     if (encptMbrFlnm != null && !encptMbrFlnm.isEmpty()) {
-                        resData.put("decptMbrFlnm", xCrypto.Decrypt("normal", encptMbrFlnm,"UTF-8"));
+                        resData.put("decptMbrFlnm", decryptValue("normal", encptMbrFlnm));
                     }
                     if (encMbrEmlNm != null && !encMbrEmlNm.isEmpty()) {
-                        resData.put("decptMbrEmlNm", xCrypto.Decrypt("normal", encMbrEmlNm,"UTF-8"));
+                        resData.put("decptMbrEmlNm", decryptValue("normal", encMbrEmlNm));
                     }
                     if (encptMbrTelno != null && !encptMbrTelno.isEmpty()) {
-                        resData.put("decptMbrTelno", xCrypto.Decrypt("normal", encptMbrTelno,"UTF-8"));
+                        resData.put("decptMbrTelno", decryptValue("normal", encptMbrTelno));
                     }
                     if (encptEmpTelno != null && !encptEmpTelno.isEmpty()) {
-                        resData.put("decptEmpTelno", xCrypto.Decrypt("normal", encptEmpTelno,"UTF-8"));
+                        resData.put("decptEmpTelno", decryptValue("normal", encptEmpTelno));
                     }
                     if (encptEmpEmlNm != null && !encptEmpEmlNm.isEmpty()) {
-                        resData.put("decptEmpEmlNm", xCrypto.Decrypt("normal", encptEmpEmlNm,"UTF-8"));
+                        resData.put("decptEmpEmlNm", decryptValue("normal", encptEmpEmlNm));
                     }
                     if (encptCnstnMbcmtRrno != null && !encptCnstnMbcmtRrno.isEmpty()) {
-                        resData.put("decptCnstnMbcmtRrno", xCrypto.Decrypt("normal", encptCnstnMbcmtRrno,"UTF-8"));
+                        resData.put("decptCnstnMbcmtRrno", decryptValue("normal", encptCnstnMbcmtRrno));
                     }
                     if (encptCnstnMbcmtActno != null && !encptCnstnMbcmtActno.isEmpty()) {
-                        resData.put("decptCnstnMbcmtActno", xCrypto.Decrypt("normal", encptCnstnMbcmtActno,"UTF-8"));
+                        resData.put("decptCnstnMbcmtActno", decryptValue("normal", encptCnstnMbcmtActno));
                     }
-                    if (reqVO.getEncptPicTelno() != null) resData.put("decptPicTelno", xCrypto.Decrypt("normal", reqVO.getEncptPicTelno(),"UTF-8"));
-                    if (reqVO.getEncptSttyAgtTelno() != null) resData.put("decptSttyAgtTelno", xCrypto.Decrypt("normal", reqVO.getEncptSttyAgtTelno(),"UTF-8"));
-                    if (reqVO.getEncptExprtFlnm() != null) resData.put("decptExprtFlnm", xCrypto.Decrypt("normal", reqVO.getEncptExprtFlnm(),"UTF-8"));
-                    if (reqVO.getEncptExprtInstEmlNm() != null) resData.put("decptExprtInstEmlNm", xCrypto.Decrypt("normal", reqVO.getEncptExprtInstEmlNm(),"UTF-8"));
-                    if (reqVO.getEncptWrtrFlnm() != null) resData.put("decptWrtrFlnm", xCrypto.Decrypt("normal", reqVO.getEncptWrtrFlnm(),"UTF-8"));
-                    if (reqVO.getEncptWrtrTelno() != null) resData.put("decptWrtrTelno", xCrypto.Decrypt("normal", reqVO.getEncptWrtrTelno(),"UTF-8"));
+                    if (reqVO.getEncptPicTelno() != null) resData.put("decptPicTelno", decryptValue("normal", reqVO.getEncptPicTelno()));
+                    if (reqVO.getEncptSttyAgtTelno() != null) resData.put("decptSttyAgtTelno", decryptValue("normal", reqVO.getEncptSttyAgtTelno()));
+                    if (reqVO.getEncptExprtFlnm() != null) resData.put("decptExprtFlnm", decryptValue("normal", reqVO.getEncptExprtFlnm()));
+                    if (reqVO.getEncptExprtInstEmlNm() != null) resData.put("decptExprtInstEmlNm", decryptValue("normal", reqVO.getEncptExprtInstEmlNm()));
+                    if (reqVO.getEncptWrtrFlnm() != null) resData.put("decptWrtrFlnm", decryptValue("normal", reqVO.getEncptWrtrFlnm()));
+                    if (reqVO.getEncptWrtrTelno() != null) resData.put("decptWrtrTelno", decryptValue("normal", reqVO.getEncptWrtrTelno()));
                     resList.add(resData);
                 }
 
@@ -433,7 +477,10 @@ public class CryptoServiceImpl implements CryptoService {
     private String decryptKo(String encryptedValue) throws Exception {
         if (encryptedValue == null || encryptedValue.isEmpty()) return encryptedValue;
 
-        String raw = xCrypto.Decrypt("normal", encryptedValue);
+        String raw = decryptValue("normal", encryptedValue);
+        if (mockBase64Enabled) {
+            return raw;
+        }
         return new String(raw.getBytes("EUC-KR"), StandardCharsets.UTF_8);
     }
 
