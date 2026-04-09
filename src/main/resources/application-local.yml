@@ -32,7 +32,6 @@ spring:
     cache: false
     enabled: false
   mvc:
-    log-request-details: true
     view:
       prefix: /views
   jmx:
@@ -110,15 +109,8 @@ file:
 logging:
   level:
     kr.or.kids: DEBUG
-    org.springframework.web: INFO
-    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
-    org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext: INFO
     jdbc.sqltiming: INFO
     jdbc.resultsettable: INFO
-
-crypto:
-  mock-base64:
-    enabled: true
 
 mybatis:
   type-aliases-package: kr.or.kids

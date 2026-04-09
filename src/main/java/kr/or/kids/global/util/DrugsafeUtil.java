@@ -210,8 +210,6 @@ public class DrugsafeUtil {
         }
         // ────────────────────────────────────────────
         // 주민등록번호 마스킹
-        // 900101-1234567 → 900101-*******
-        // 9001011234567  → 900101*******
         // ────────────────────────────────────────────
         else if (part.equals("rrno")) {
             if (value.matches("\\d{6}-\\d{7}")) {
@@ -395,7 +393,12 @@ public class DrugsafeUtil {
 
         return request.getRemoteAddr();
     }
-
+    /*
+     *  [시큐어코딩 예외] CWE-759 솔트 없는 단방향 해시
+     * SHA-256을 비밀번호 해싱 목적이 아닌 JWT 토큰의 Redis 키 축약 용도로만 사용.
+     * 동일 토큰 → 동일 키 조회가 필수이므로 솔트 적용 불가.
+     * 민감정보 저장이 아닌 키 식별자로만 활용되어 보안 위협 없음.
+     */
     public static String sha256Hex(String input) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");

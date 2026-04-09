@@ -45,7 +45,6 @@ public class JwtTokenProvider {
             // 만료시간은 지났습니다.
             throw new ApplicationException(MessageContextHolder.getMessage("ui.token.expired"));
         }
-
         // 현재시간 기준 이후 ACCESS_TOKEN_EXPIRATION 시간만큼 Access Token 유효시간 설정
         Date expireTime = new Date(System.currentTimeMillis() + expTime);
         // 토큰생성에필요한데이터설정으로토큰생성
@@ -73,6 +72,8 @@ public class JwtTokenProvider {
         }
      // 현재시간 기준 이후 ACCESS_TOKEN_EXPIRATION 시간만큼 Access Token 유효시간 설정
         Date expireTime = new Date(System.currentTimeMillis() + expTime);
+
+
         // 토큰생성에필요한데이터설정으로토큰생성
         return Jwts.builder()
                 .setSubject(mbrId)                                  // userId & 토큰생성주체지정
@@ -127,7 +128,6 @@ public class JwtTokenProvider {
             if(StringUtils.hasLength(token) && token.startsWith("Bearer ")) {
                 token = token.substring(7);
             }
-
             Jwts.parser()
                     .setSigningKey(SECRET_KEY)
                     .parseClaimsJws(token);
@@ -163,7 +163,6 @@ public class JwtTokenProvider {
             return e.getClaims();
         }
     }
-
 
     /**
      * JWT 토큰의 만료시간 얻기

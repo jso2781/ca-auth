@@ -5,6 +5,10 @@ import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
+import kr.or.kids.domain.ca.connecionlog.mapper.ConnectionLogMapper;
+import kr.or.kids.domain.ca.crypto.service.CryptoService;
+import kr.or.kids.domain.ca.crypto.vo.MbrEncryptPVO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -60,6 +64,11 @@ public class AuthServiceImpl implements AuthService
     private final IdleTokenService idleTokenService;
 
     private final ConnectionLogService connectionLogService;
+
+    private final ConnectionLogMapper connectionLogMapper;
+
+    @Autowired
+    private CryptoService cryptoService;
 
     @Override
     public MbrTokenRVO getMbrToken(MbrTokenPVO mbrTokenPVO)
@@ -131,7 +140,17 @@ public class AuthServiceImpl implements AuthService
                 String lgnSeCd = "1";
 
 //                if(!passwordEncoder.matches(loginVO.getMbrEnpswd(), userInfo.getMbrEnpswd())) {
-                if(loginVO.getEncptMbrPswd() != null && !loginVO.getEncptMbrPswd().equals(userInfo.getEncptMbrPswd())){
+                MbrEncryptPVO reqVO = new MbrEncryptPVO();
+                reqVO.setMbrPswd(loginVO.getEncptMbrPswd());
+                ApiPrnDto apiPrnDto2 = new ApiPrnDto(ApiResultCode.SUCCESS);
+                apiPrnDto2 = cryptoService.encrypto(reqVO);
+
+                String resultEncPasswd = String.valueOf(apiPrnDto2.getData().get("encptMbrPswd"));
+                log.info("resultEncPasswd ######::::::"+ resultEncPasswd);
+                log.info("userInfo.getEncptMbrPswd() ######::::::"+ userInfo.getEncptMbrPswd());
+
+                //if(loginVO.getEncptMbrPswd() != null && !loginVO.getEncptMbrPswd().equals(userInfo.getEncptMbrPswd())){
+                if(loginVO.getEncptMbrPswd() != null && !resultEncPasswd.equals(userInfo.getEncptMbrPswd())){
                     apiPrnDto = DrugsafeUtil.getApiPrnDto("0", MessageContextHolder.getMessage("ui.msg.login.nofound"));
 
                     int pswdErrNmtm = userInfo.getPswdErrNmtm();
@@ -286,8 +305,6 @@ public class AuthServiceImpl implements AuthService
                     HashMap <String, Object> connLogInsertMap = connLogInsert.getData();
                     bizData.put("sessLogSn", connLogInsertMap.get("sessLogSn"));
                     /**************************************** 공통_세션정보시스템로그 Rest API 호출(tb_ca_l_sesn_log_info_mng 로그인 성공 기록) 끝 ************************************************/
-
-                    apiPrnDto.setData(bizData);
 
                     return apiPrnDto;
                 }
@@ -496,12 +513,20 @@ public class AuthServiceImpl implements AuthService
         MbrInfoPVO mp = new MbrInfoPVO();
         mp.setMbrId(mbrId);
         MbrInfoRVO userInfo = mbrInfoMapper.getMbrInfo(mp);
+
+        //  세션로그일련번호 추가
+        ConnectionLogInsertReqVO reqVo = new ConnectionLogInsertReqVO();
+        reqVo.setSrvcUserId(mbrId);
+        reqVo.setLgnSeCd(userInfo.getLgnSeCd());
+        long sessionLogSn = connectionLogMapper.getLastId(reqVo);
+
         HashMap<String, Object> bizData = new HashMap<>();
         //  Redis Idle 키가 없을 시
         if (!idleTokenService.exists(tokenSn)) {
             bizData.put("loging", "false");
         }else{
             bizData.put("loging", "true");
+            bizData.put("sessionLogSn", sessionLogSn);
             bizData.put("userInfo", userInfo);
             bizData.put("mbrId", mbrId);
             bizData.put("token", token);

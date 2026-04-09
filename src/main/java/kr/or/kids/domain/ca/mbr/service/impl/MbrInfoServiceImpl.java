@@ -178,7 +178,6 @@ public class MbrInfoServiceImpl implements MbrInfoService
 
 
         } catch(Exception e) {
-            log.error("사용자 정보 암호화 실패", e);
             result = new ApiPrnDto(ApiResultCode.SYSTEM_ERROR);
             result.setMsg("사용자 정보 암호화 중 오류가 발생했습니다: " + e.getMessage());
         }
@@ -223,7 +222,6 @@ public class MbrInfoServiceImpl implements MbrInfoService
             result.setMsg("사용자 정보 암호화 완료");
 
         } catch(Exception e) {
-            log.error("복호화 실패", e);
             result = new ApiPrnDto(ApiResultCode.SYSTEM_ERROR);
             result.setMsg("개인정보 복호화 중 오류가 발생했습니다: " + e.getMessage());
         }

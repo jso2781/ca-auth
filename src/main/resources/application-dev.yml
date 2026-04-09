@@ -134,7 +134,7 @@ mybatis:
     local-cache-scope: session
     jdbc-type-for-null: NULL
     variables:
-      db_encrypt_key: "1234567890"
+      db_encrypt_key: ""
 management:
   endpoint:
     health:

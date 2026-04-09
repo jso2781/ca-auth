@@ -1,8 +1,11 @@
 package kr.or.kids.domain.ca.crypto.service;
 
+import kr.or.kids.domain.ca.auth.vo.MbrTokenPVO;
 import kr.or.kids.domain.ca.crypto.vo.MbrEncryptListPVO;
 import kr.or.kids.domain.ca.crypto.vo.MbrEncryptPVO;
 import kr.or.kids.global.system.common.vo.ApiPrnDto;
+
+import java.util.List;
 
 public interface CryptoService {
 
