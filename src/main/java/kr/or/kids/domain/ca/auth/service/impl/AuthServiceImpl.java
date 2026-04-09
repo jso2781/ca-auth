@@ -150,13 +150,16 @@ public class AuthServiceImpl implements AuthService
                 // local(내부망 로컬), localout(외부망 로컬) 환경에서는 암/복호화 모듈이 사용불가 상태이므로, dev(stg 서버), prod(운영계 서버)의 암복호화 관련 Rest API를 호출해서 처리함.
                 if(env.acceptsProfiles(Profiles.of("local", "localout"))){
                     CryptoEncryptoPVO reqVO1 = new CryptoEncryptoPVO();
-                    reqVO1.setEncptMbrPswd(loginVO.getEncptMbrPswd());
+                    reqVO1.setMbrPswd(loginVO.getEncptMbrPswd());
                     apiPrnDto2 = cryptoClient.encrypto(reqVO1);
+
+                    log.info("========== cryptoClient.encrypto Rest API prameter encptMbrPswd="+loginVO.getEncptMbrPswd());
                 }
                 else{
                     MbrEncryptPVO reqVO = new MbrEncryptPVO();
                     reqVO.setMbrPswd(loginVO.getEncptMbrPswd());
                     apiPrnDto2 = cryptoService.encrypto(reqVO);
+                    log.info("========== cryptoService.encrypto prameter encptMbrPswd="+loginVO.getEncptMbrPswd());
                 }
 
                 String resultEncPasswd = String.valueOf(apiPrnDto2.getData().get("encptMbrPswd"));
