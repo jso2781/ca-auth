@@ -79,6 +79,14 @@ spring:
         timeout: 5000
         writetimeout: 5000
         debug: true  # 추가 (XML과 일치)
+
+external:
+  services:
+    crypto:
+      base-url: https://stg.drugsafe.or.kr
+      connect-timeout-ms: 3000
+      read-timeout-ms: 6000
+
 surem:
   base-url: https://api.surem.com
   user-code: YOUR_USER_CODE
