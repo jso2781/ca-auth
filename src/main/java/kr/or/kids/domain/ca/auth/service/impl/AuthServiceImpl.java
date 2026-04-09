@@ -5,11 +5,9 @@ import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
-import kr.or.kids.domain.ca.connecionlog.mapper.ConnectionLogMapper;
-import kr.or.kids.domain.ca.crypto.service.CryptoService;
-import kr.or.kids.domain.ca.crypto.vo.MbrEncryptPVO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -21,8 +19,13 @@ import kr.or.kids.domain.ca.auth.service.TokenBlacklistService;
 import kr.or.kids.domain.ca.auth.vo.MbrTokenDVO;
 import kr.or.kids.domain.ca.auth.vo.MbrTokenPVO;
 import kr.or.kids.domain.ca.auth.vo.MbrTokenRVO;
+import kr.or.kids.domain.ca.connecionlog.mapper.ConnectionLogMapper;
 import kr.or.kids.domain.ca.connecionlog.service.ConnectionLogService;
 import kr.or.kids.domain.ca.connecionlog.vo.ConnectionLogInsertReqVO;
+import kr.or.kids.domain.ca.crypto.service.CryptoService;
+import kr.or.kids.domain.ca.crypto.vo.MbrEncryptPVO;
+import kr.or.kids.domain.ca.external.crypto.client.CryptoClient;
+import kr.or.kids.domain.ca.external.crypto.vo.CryptoEncryptoPVO;
 import kr.or.kids.domain.ca.mbr.mapper.MbrInfoMapper;
 import kr.or.kids.domain.ca.mbr.vo.MbrInfoPVO;
 import kr.or.kids.domain.ca.mbr.vo.MbrInfoRVO;
@@ -67,8 +70,11 @@ public class AuthServiceImpl implements AuthService
 
     private final ConnectionLogMapper connectionLogMapper;
 
-    @Autowired
-    private CryptoService cryptoService;
+    private final CryptoService cryptoService;
+
+    private final Environment env;
+
+    private final CryptoClient cryptoClient;
 
     @Override
     public MbrTokenRVO getMbrToken(MbrTokenPVO mbrTokenPVO)
@@ -139,11 +145,19 @@ public class AuthServiceImpl implements AuthService
                 // 로그인 구분코드(1 - 자체로그인, 2 - Any-ID 로그인)
                 String lgnSeCd = "1";
 
-//                if(!passwordEncoder.matches(loginVO.getMbrEnpswd(), userInfo.getMbrEnpswd())) {
-                MbrEncryptPVO reqVO = new MbrEncryptPVO();
-                reqVO.setMbrPswd(loginVO.getEncptMbrPswd());
                 ApiPrnDto apiPrnDto2 = new ApiPrnDto(ApiResultCode.SUCCESS);
-                apiPrnDto2 = cryptoService.encrypto(reqVO);
+
+                // local(내부망 로컬), localout(외부망 로컬) 환경에서는 암/복호화 모듈이 사용불가 상태이므로, dev(stg 서버), prod(운영계 서버)의 암복호화 관련 Rest API를 호출해서 처리함.
+                if(env.acceptsProfiles(Profiles.of("local", "localout"))){
+                    CryptoEncryptoPVO reqVO1 = new CryptoEncryptoPVO();
+                    reqVO1.setEncptMbrPswd(loginVO.getEncptMbrPswd());
+                    apiPrnDto2 = cryptoClient.encrypto(reqVO1);
+                }
+                else{
+                    MbrEncryptPVO reqVO = new MbrEncryptPVO();
+                    reqVO.setMbrPswd(loginVO.getEncptMbrPswd());
+                    apiPrnDto2 = cryptoService.encrypto(reqVO);
+                }
 
                 String resultEncPasswd = String.valueOf(apiPrnDto2.getData().get("encptMbrPswd"));
                 log.info("resultEncPasswd ######::::::"+ resultEncPasswd);
