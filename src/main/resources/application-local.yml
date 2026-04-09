@@ -80,7 +80,7 @@ spring:
 external:
   services:
     crypto:
-      base-url: https://stg.drugsafe.or.kr
+      base-url: http://192.168.2.147:30013
       connect-timeout-ms: 3000
       read-timeout-ms: 6000
 
