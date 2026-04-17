@@ -77,9 +77,9 @@
             ,mbr.link_info_idntf_id
             ,mbr.cert_token_vl
             ,mbr.rgtr_id
-            ,mbr.reg_dt
+            ,TO_CHAR(mbr.reg_dt, 'YYYY-MM-DD HH24:MI:SS') AS reg_dt
             ,mbr.mdfr_id
-            ,mbr.mdfcn_dt
+            ,TO_CHAR(mbr.mdfcn_dt, 'YYYY-MM-DD HH24:MI:SS') AS mdfcn_dt
             ,ex.expert_yn
             ,ex.appr_inst_task_json_array
         FROM kids_own.tb_pp_m_mbr_info mbr
